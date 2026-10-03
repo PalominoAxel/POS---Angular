@@ -1,0 +1,70 @@
+<div class="container-fluid py-3">
+  @if (!verificandoCaja() && !cajaAbierta() && !ultimaVenta()) {
+    <div class="alert alert-warning no-print">
+      ⚠️ No hay una caja abierta. Un administrador debe abrir caja (sección Admin → Caja) antes de poder procesar ventas.
+    </div>
+  }
+
+  @if (ultimaVenta()) {
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h4 class="text-center mb-3">Comprobante emitido</h4>
+        <app-ticket-comprobante [venta]="ultimaVenta()!" />
+        <div class="text-center mt-3 no-print">
+          <button class="btn btn-outline-danger" (click)="nuevaVenta()">Nueva venta</button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <app-catalogo-productos />
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card shadow-sm p-3 sticky-top" style="top: 1rem">
+          <app-carrito />
+
+          <hr />
+
+          <app-formulario-comprobante />
+
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Método de pago</label>
+            <div class="btn-group w-100" role="group">
+              @for (metodo of metodosPago; track metodo) {
+                <button
+                  type="button"
+                  class="btn btn-sm"
+                  [class.btn-danger]="carrito.metodoPago() === metodo"
+                  [class.btn-outline-secondary]="carrito.metodoPago() !== metodo"
+                  (click)="seleccionarMetodoPago(metodo)"
+                >
+                  {{ metodo === 'EFECTIVO' ? 'Efectivo' : metodo === 'TARJETA' ? 'Tarjeta' : 'Yape/Plin' }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <hr />
+
+          <app-cupon-box />
+
+          <app-resumen-totales />
+
+          @if (errorPago()) {
+            <div class="alert alert-danger py-2 mt-2">{{ errorPago() }}</div>
+          }
+
+          <button
+            class="btn btn-danger w-100 mt-3"
+            [disabled]="carritoVacio() || procesando() || !cajaAbierta()"
+            (click)="procesarPago()"
+          >
+            {{ procesando() ? 'Procesando...' : 'Procesar Pago' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

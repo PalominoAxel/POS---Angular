@@ -1,0 +1,61 @@
+<div>
+  <label class="form-label small fw-semibold">Tipo de comprobante</label>
+  <select
+    class="form-select mb-2"
+    [ngModel]="tipoComprobante()"
+    (ngModelChange)="tipoComprobante.set($event)"
+  >
+    <option value="BOLETA">Boleta</option>
+    <option value="FACTURA">Factura</option>
+  </select>
+
+  @if (tipoComprobante() === 'BOLETA') {
+    <div class="mb-2">
+      <label class="form-label small">Documento del cliente</label>
+      <select
+        class="form-select form-select-sm mb-1"
+        [ngModel]="tipoDocumento()"
+        (ngModelChange)="tipoDocumento.set($event); numeroDocumento.set('')"
+      >
+        <option value="SIN_DOC">Sin documento (Cliente Varios)</option>
+        <option value="DNI">DNI</option>
+        <option value="CE">Carné de Extranjería</option>
+      </select>
+
+      @if (tipoDocumento() !== 'SIN_DOC') {
+        <input
+          class="form-control form-control-sm"
+          [placeholder]="tipoDocumento() === 'DNI' ? 'Ej: 72839401' : 'Ej: 001234567'"
+          inputmode="numeric"
+          [attr.maxlength]="maxLengthDocumento()"
+          [ngModel]="numeroDocumento()"
+          (ngModelChange)="onNumeroDocumentoInput($event)"
+          (keydown)="bloquearNoNumerico($event)"
+        />
+      }
+    </div>
+  } @else {
+    <div class="mb-2">
+      <label class="form-label small">RUC</label>
+      <input
+        class="form-control form-control-sm mb-1"
+        placeholder="11 dígitos"
+        inputmode="numeric"
+        maxlength="11"
+        [ngModel]="ruc()"
+        (ngModelChange)="onRucInput($event)"
+        (keydown)="bloquearNoNumerico($event)"
+      />
+      <label class="form-label small">Razón Social</label>
+      <input
+        class="form-control form-control-sm"
+        [ngModel]="razonSocial()"
+        (ngModelChange)="razonSocial.set($event)"
+      />
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-danger py-1 px-2 small mb-0">{{ error() }}</div>
+  }
+</div>

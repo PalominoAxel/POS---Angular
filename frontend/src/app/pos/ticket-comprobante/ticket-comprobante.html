@@ -1,0 +1,95 @@
+<div>
+  <div class="ticket-print-area mx-auto bg-white p-3" style="max-width: 320px; font-family: 'Courier New', monospace">
+    <div class="text-center">
+      <div class="fs-4 fw-bold text-danger">TAMBO</div>
+      <div class="small">Tienda de Conveniencia</div>
+      <div class="fw-semibold mt-1">
+        {{ venta().tipoComprobante === 'FACTURA' ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA' }}
+      </div>
+      <div>N° {{ venta().numeroComprobante }}</div>
+    </div>
+
+    <hr />
+
+    <div class="small">
+      <div class="d-flex justify-content-between">
+        <span>Fecha:</span>
+        <span>{{ venta().fecha | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      @if (venta().tipoComprobante === 'FACTURA') {
+        <div class="d-flex justify-content-between">
+          <span>RUC:</span>
+          <span>{{ venta().clienteRuc }}</span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span>Razón Social:</span>
+          <span>{{ venta().clienteRazonSocial }}</span>
+        </div>
+      } @else {
+        <div class="d-flex justify-content-between">
+          <span>Cliente:</span>
+          <span>
+            {{
+              venta().clienteNumeroDocumento
+                ? venta().clienteTipoDocumento + ': ' + venta().clienteNumeroDocumento
+                : 'Cliente Varios'
+            }}
+          </span>
+        </div>
+      }
+    </div>
+
+    <hr />
+
+    <div class="small">
+      @for (item of venta().items; track item.id) {
+        <div class="d-flex justify-content-between">
+          <span>{{ item.cantidad }} x {{ item.nombreProducto }}</span>
+          <span>{{ item.subtotal | precioSoles }}</span>
+        </div>
+        <div class="text-muted" style="font-size: 0.75rem">P. Unit: {{ item.precioUnitario | precioSoles }}</div>
+      }
+    </div>
+
+    <hr />
+
+    <div class="small">
+      <div class="d-flex justify-content-between">
+        <span>Total Productos:</span>
+        <span>{{ venta().totalProductos | precioSoles }}</span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span>Descuentos:</span>
+        <span>-{{ venta().descuentoAplicado | precioSoles }}</span>
+      </div>
+      <div class="d-flex justify-content-between fw-bold fs-6">
+        <span>TOTAL:</span>
+        <span>{{ venta().totalPagar | precioSoles }}</span>
+      </div>
+      <div class="d-flex justify-content-between text-muted">
+        <span>IGV (18%, incluido):</span>
+        <span>{{ venta().igvDesglosado | precioSoles }}</span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span>Cupón:</span>
+        <span>{{ venta().cupon ? venta().cupon!.codigo + ' (-' + (venta().cuponMontoDescuento | precioSoles) + ')' : 'No utilizado' }}</span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span>Método de pago:</span>
+        <span>{{ venta().metodoPago === 'EFECTIVO' ? 'Efectivo' : venta().metodoPago === 'TARJETA' ? 'Tarjeta' : 'Yape/Plin' }}</span>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="text-center small">
+      <p class="mb-0">¡Gracias por tu compra!</p>
+      <p class="text-muted">Vuelve pronto a TAMBO</p>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-center mt-3 no-print">
+    <button class="btn btn-danger btn-sm" (click)="imprimir()">🖨️ Imprimir Ticket</button>
+    <button class="btn btn-outline-secondary btn-sm" (click)="verJson()">Ver JSON en Consola</button>
+  </div>
+</div>

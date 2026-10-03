@@ -1,0 +1,15 @@
+<div class="border-top pt-2">
+  <div class="d-flex justify-content-between small">
+    <span>Total Productos</span>
+    <span>{{ carrito.totalProductos() | precioSoles }}</span>
+  </div>
+  <div class="d-flex justify-content-between small text-danger">
+    <span>Descuentos</span>
+    <span>- {{ carrito.descuentoTotal() | precioSoles }}</span>
+  </div>
+  <div class="d-flex justify-content-between fw-bold fs-5 mt-1">
+    <span>Total a pagar</span>
+    <span>{{ carrito.totalEstimado() | precioSoles }}</span>
+  </div>
+  <div class="text-muted small text-end">(IGV incluido)</div>
+</div>

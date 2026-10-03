@@ -1,0 +1,69 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Usuarios</h3>
+    <button class="btn btn-danger" (click)="mostrarForm.set(!mostrarForm())">
+      {{ mostrarForm() ? 'Cancelar' : '+ Nuevo usuario' }}
+    </button>
+  </div>
+
+  @if (mostrarForm()) {
+    <form [formGroup]="form" (ngSubmit)="crear()" class="card p-3 mb-3" style="max-width: 500px">
+      <div class="mb-2">
+        <label class="form-label">Nombre de usuario</label>
+        <input class="form-control" formControlName="nombreUsuario" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Nombre completo</label>
+        <input class="form-control" formControlName="nombre" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Contraseña</label>
+        <input type="password" class="form-control" formControlName="password" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Rol</label>
+        <select class="form-select" formControlName="rol">
+          <option value="CAJERO">Cajero</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
+      </div>
+      @if (error()) {
+        <div class="alert alert-danger py-2">{{ error() }}</div>
+      }
+      <button type="submit" class="btn btn-danger" [disabled]="enviando()">
+        {{ enviando() ? 'Creando...' : 'Crear usuario' }}
+      </button>
+    </form>
+  }
+
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Nombre</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (usuario of usuarios(); track usuario.id) {
+        <tr>
+          <td>{{ usuario.nombreUsuario }}</td>
+          <td>{{ usuario.nombre }}</td>
+          <td>{{ usuario.rol }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="usuario.activo" [class.text-bg-secondary]="!usuario.activo">
+              {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary" (click)="cambiarEstado(usuario)">
+              {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,125 @@
+<div>
+  <h3 class="mb-4">Resumen General</h3>
+
+  @if (resumen(); as r) {
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card shadow-sm p-3">
+          <div class="text-muted small">Ventas del Día</div>
+          <div class="fs-4 fw-bold">{{ r.ventasDelDia | precioSoles }}</div>
+          <div class="text-muted small">{{ r.numeroVentas }} ventas</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm p-3">
+          <div class="text-muted small">Ticket Promedio</div>
+          <div class="fs-4 fw-bold">{{ r.ticketPromedio | precioSoles }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm p-3">
+          <div class="text-muted small">IGV Recaudado (Día)</div>
+          <div class="fs-4 fw-bold">{{ r.igvRecaudadoDia | precioSoles }}</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <button
+          type="button"
+          class="card shadow-sm p-3 w-100 text-start border-0"
+          [class.border-warning]="r.alertasStockBajo > 0"
+          style="cursor: pointer"
+          [disabled]="r.alertasStockBajo === 0"
+          (click)="abrirStockBajo()"
+        >
+          <div class="text-muted small">Alertas de Stock Bajo</div>
+          <div class="fs-4 fw-bold" [class.text-warning]="r.alertasStockBajo > 0">{{ r.alertasStockBajo }}</div>
+          @if (r.alertasStockBajo > 0) {
+            <div class="text-muted small">Clic para ver detalle</div>
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (mostrarModalStockBajo()) {
+    <div class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Productos con stock bajo (&lt; 15 unidades)</h5>
+            <button class="btn-close" (click)="cerrarStockBajo()"></button>
+          </div>
+          <div class="modal-body">
+            @if (cargandoStockBajo()) {
+              <p>Cargando...</p>
+            } @else {
+              <table class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Stock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of productosStockBajo(); track p.id) {
+                    <tr>
+                      <td>{{ p.codigo }}</td>
+                      <td>{{ p.nombre | capitalizar }}</td>
+                      <td>{{ p.categoria }}</td>
+                      <td [class.text-danger]="p.stock === 0" class="fw-semibold">{{ p.stock }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="row g-3">
+    <div class="col-md-5">
+      <div class="card shadow-sm p-3">
+        <h6 class="fw-semibold mb-3">Top 5 productos más vendidos</h6>
+        @if (topProductos().length === 0) {
+          <p class="text-muted small">Aún no hay ventas registradas.</p>
+        } @else {
+          <ol class="mb-0">
+            @for (p of topProductos(); track p.productoId) {
+              <li class="d-flex justify-content-between">
+                <span>{{ p.nombre }}</span>
+                <span class="fw-semibold">{{ p.unidadesVendidas }} u.</span>
+              </li>
+            }
+          </ol>
+        }
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div class="card shadow-sm p-3">
+        <h6 class="fw-semibold mb-3">Ventas por categoría (hoy)</h6>
+        @if (cargando()) {
+          <p class="text-muted small">Cargando...</p>
+        } @else if (ventasPorCategoria().length === 0) {
+          <p class="text-muted small">Aún no hay ventas hoy.</p>
+        } @else {
+          @for (v of ventasPorCategoria(); track v.categoria) {
+            <div class="mb-2">
+              <div class="d-flex justify-content-between small">
+                <span>{{ v.categoria }}</span>
+                <span>{{ v.totalIngresos | precioSoles }}</span>
+              </div>
+              <div class="progress" style="height: 8px">
+                <div class="progress-bar bg-danger" [style.width.%]="porcentajeBarra(v.totalIngresos)"></div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

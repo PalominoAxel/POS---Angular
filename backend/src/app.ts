@@ -1,0 +1,32 @@
+import express, { Application, NextFunction, Request, Response } from "express";
+import cors from "cors";
+import { authRouter } from "./routes/auth.routes";
+import { productosRouter } from "./routes/productos.routes";
+import { ventasRouter } from "./routes/ventas.routes";
+import { reportesRouter } from "./routes/reportes.routes";
+import { usuariosRouter } from "./routes/usuarios.routes";
+import { cuponesRouter } from "./routes/cupones.routes";
+import { cajaRouter } from "./routes/caja.routes";
+
+export function crearApp(): Application {
+  const app = express();
+
+  app.use(cors());
+  app.use(express.json());
+
+  app.get("/api/health", (_req, res) => res.json({ estado: "ok" }));
+  app.use("/api/auth", authRouter);
+  app.use("/api/productos", productosRouter);
+  app.use("/api/ventas", ventasRouter);
+  app.use("/api/reportes", reportesRouter);
+  app.use("/api/usuarios", usuariosRouter);
+  app.use("/api/cupones", cuponesRouter);
+  app.use("/api/caja", cajaRouter);
+
+  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error interno del servidor" });
+  });
+
+  return app;
+}

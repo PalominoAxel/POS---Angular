@@ -1,0 +1,20 @@
+/* You can add global styles to this file, and also import other style files */
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .ticket-print-area,
+  .ticket-print-area * {
+    visibility: visible;
+  }
+  .ticket-print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

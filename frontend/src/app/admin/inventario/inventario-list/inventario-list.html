@@ -1,0 +1,84 @@
+<div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Gestión de Inventario</h3>
+    <a class="btn btn-danger" routerLink="nuevo">+ Nuevo producto</a>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-md-5">
+      <input
+        class="form-control"
+        placeholder="Buscar por nombre..."
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event); irAPagina(1)"
+      />
+    </div>
+    <div class="col-md-3">
+      <select
+        class="form-select"
+        [ngModel]="categoriaFiltro()"
+        (ngModelChange)="categoriaFiltro.set($event); irAPagina(1)"
+      >
+        <option value="TODAS">Todas las categorías</option>
+        @for (categoria of categorias; track categoria) {
+          <option [value]="categoria">{{ categoria }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <p>Cargando productos...</p>
+  } @else if (error()) {
+    <div class="alert alert-danger">{{ error() }}</div>
+  } @else {
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Precio regular</th>
+          <th>Precio oferta</th>
+          <th>Stock</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (producto of productosPagina(); track producto.id) {
+          <tr>
+            <td>{{ producto.codigo }}</td>
+            <td>{{ producto.nombre | capitalizar }}</td>
+            <td>{{ producto.categoria }}</td>
+            <td>{{ producto.precioRegular | precioSoles }}</td>
+            <td>{{ producto.precioOferta | precioSoles }}</td>
+            <td>{{ producto.stock }}</td>
+            <td class="text-end">
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary" (click)="agregarStock(producto)" title="+10 stock">+10</button>
+                <a class="btn btn-outline-primary" [routerLink]="[producto.id, 'editar']">Editar</a>
+                <button class="btn btn-outline-danger" (click)="eliminar(producto)">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="text-center text-muted">No hay productos que coincidan.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    @if (totalPaginas() > 1) {
+      <nav>
+        <ul class="pagination pagination-sm">
+          @for (pagina of paginasDisponibles(); track pagina) {
+            <li class="page-item" [class.active]="paginaActual() === pagina">
+              <button class="page-link" (click)="irAPagina(pagina)">{{ pagina }}</button>
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+  }
+</div>

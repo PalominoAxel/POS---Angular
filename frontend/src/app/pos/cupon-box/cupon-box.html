@@ -1,0 +1,29 @@
+<div>
+  <button type="button" class="btn btn-sm btn-outline-secondary mb-2" (click)="alternar()">
+    🎟️ {{ carrito.cuponAplicado() ? 'Cupón aplicado' : '¿Tienes un cupón?' }}
+  </button>
+
+  @if (visible()) {
+    @if (!carrito.cuponAplicado()) {
+      <div class="input-group input-group-sm mb-2">
+        <input
+          class="form-control"
+          placeholder="Código de cupón"
+          [ngModel]="codigo()"
+          (ngModelChange)="onCodigoInput($event)"
+        />
+        <button class="btn btn-outline-danger" type="button" (click)="aplicar()">Aplicar</button>
+      </div>
+      @if (carrito.errorCupon()) {
+        <div class="text-danger small mb-2">{{ carrito.errorCupon() }}</div>
+      }
+    } @else {
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="small text-success">
+          Cupón {{ carrito.cuponAplicado()!.codigo }}: -{{ carrito.montoDescuentoCupon() | precioSoles }}
+        </span>
+        <button class="btn btn-sm btn-link text-danger" (click)="quitar()">Quitar</button>
+      </div>
+    }
+  }
+</div>

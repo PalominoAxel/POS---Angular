@@ -1,0 +1,123 @@
+<div>
+  <h3 class="mb-3">Caja</h3>
+
+  @if (cargando()) {
+    <p>Cargando...</p>
+  } @else if (!cajaActual()) {
+    <div class="card p-3" style="max-width: 400px">
+      <h6 class="fw-semibold">Abrir caja</h6>
+      <p class="text-muted small">No hay ninguna caja abierta. Ingresa el monto con el que se abre la caja para empezar a vender.</p>
+      <label class="form-label small">Monto de apertura (S/)</label>
+      <input
+        type="number"
+        step="0.01"
+        class="form-control mb-2"
+        [ngModel]="montoApertura()"
+        (ngModelChange)="montoApertura.set($event)"
+      />
+      @if (error()) {
+        <div class="alert alert-danger py-2">{{ error() }}</div>
+      }
+      <button class="btn btn-danger" (click)="abrirCaja()">Abrir caja</button>
+    </div>
+  } @else if (resumen(); as r) {
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h6 class="fw-semibold">Caja abierta</h6>
+          <p class="small text-muted mb-1">
+            Abierta por {{ r.caja.usuarioApertura.nombre }} el {{ r.caja.fechaApertura | date: 'dd/MM/yyyy HH:mm' }}
+          </p>
+          <div class="d-flex justify-content-between">
+            <span>Monto de apertura</span>
+            <span>{{ r.caja.montoApertura | precioSoles }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>N° de ventas</span>
+            <span>{{ r.numeroVentas }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Total vendido</span>
+            <span>{{ r.totalVentas | precioSoles }}</span>
+          </div>
+          <hr />
+          <div class="d-flex justify-content-between">
+            <span>Efectivo</span>
+            <span>{{ r.porMetodoPago.EFECTIVO | precioSoles }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Tarjeta</span>
+            <span>{{ r.porMetodoPago.TARJETA | precioSoles }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Yape/Plin</span>
+            <span>{{ r.porMetodoPago.DIGITAL | precioSoles }}</span>
+          </div>
+          <hr />
+          <div class="d-flex justify-content-between fw-bold">
+            <span>Efectivo esperado en caja</span>
+            <span>{{ r.montoEfectivoEsperado | precioSoles }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h6 class="fw-semibold">Cerrar caja</h6>
+          <p class="text-muted small">Cuenta el efectivo físico en caja e ingresa el monto antes de cerrar.</p>
+          <label class="form-label small">Monto contado (S/)</label>
+          <input
+            type="number"
+            step="0.01"
+            class="form-control mb-2"
+            [ngModel]="montoCierreDeclarado()"
+            (ngModelChange)="montoCierreDeclarado.set($event)"
+          />
+          @if (error()) {
+            <div class="alert alert-danger py-2">{{ error() }}</div>
+          }
+          <button class="btn btn-outline-danger" (click)="cerrarCaja()">Cerrar caja</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (resultadoCierre(); as resultado) {
+    <div class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Caja cerrada</h5>
+            <button class="btn-close" (click)="cerrarResultadoCierre()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex justify-content-between">
+              <span>Total vendido</span>
+              <span>{{ resultado.totalVentas | precioSoles }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Efectivo esperado</span>
+              <span>{{ resultado.montoEfectivoEsperado | precioSoles }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Monto declarado</span>
+              <span>{{ resultado.montoCierreDeclarado! | precioSoles }}</span>
+            </div>
+            <hr />
+            <div class="d-flex justify-content-between fw-bold" [class.text-danger]="resultado.diferencia! < 0" [class.text-success]="resultado.diferencia! >= 0">
+              <span>Diferencia</span>
+              <span>{{ resultado.diferencia! | precioSoles }}</span>
+            </div>
+            @if (resultado.diferencia! < 0) {
+              <p class="text-danger small mt-2">Falta efectivo respecto a lo esperado.</p>
+            } @else if (resultado.diferencia! > 0) {
+              <p class="text-success small mt-2">Hay más efectivo del esperado (sobrante).</p>
+            } @else {
+              <p class="text-success small mt-2">La caja cuadra exactamente.</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

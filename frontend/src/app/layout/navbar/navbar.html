@@ -1,0 +1,15 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 no-print">
+  <a class="navbar-brand fw-bold text-danger" routerLink="/pos">TAMBO <span class="text-white fw-normal">POS</span></a>
+
+  <div class="navbar-nav me-auto">
+    <a class="nav-link" routerLink="/pos" routerLinkActive="active">Punto de Venta</a>
+    @if (auth.esAdmin()) {
+      <a class="nav-link" routerLink="/admin" routerLinkActive="active">Administración</a>
+    }
+  </div>
+
+  <div class="d-flex align-items-center text-white gap-3">
+    <span class="small">{{ auth.usuarioActual()?.nombre }} · {{ auth.usuarioActual()?.rol }}</span>
+    <button class="btn btn-sm btn-outline-light" (click)="cerrarSesion()">Salir</button>
+  </div>
+</nav>

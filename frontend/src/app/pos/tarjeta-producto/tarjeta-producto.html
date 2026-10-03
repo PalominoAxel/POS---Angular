@@ -1,0 +1,48 @@
+<div class="card h-100 shadow-sm">
+  <div class="position-relative bg-light d-flex align-items-center justify-content-center" style="height: 130px">
+    <img
+      [src]="producto().imagenUrl"
+      (error)="onImagenError($event)"
+      class="card-img-top"
+      style="height: 100%; width: 100%; object-fit: contain; padding: 6px"
+      [alt]="producto().nombre"
+    />
+    @if (producto().esPrime) {
+      <span class="badge text-bg-dark position-absolute top-0 start-0 m-1">PRIME</span>
+    }
+    @if (tieneDescuento()) {
+      <span class="badge text-bg-danger position-absolute top-0 end-0 m-1">-{{ porcentajeDescuento() }}%</span>
+    }
+  </div>
+
+  <div class="card-body d-flex flex-column p-2">
+    <div class="small fw-semibold flex-grow-1">{{ producto().nombre }}</div>
+
+    <div class="d-flex align-items-baseline gap-2 my-1">
+      <span class="fw-bold">{{ producto().precioOferta | precioSoles }}</span>
+      @if (tieneDescuento()) {
+        <span class="text-muted text-decoration-line-through small">{{ producto().precioRegular | precioSoles }}</span>
+      }
+    </div>
+
+    <span class="badge {{ estadoStock().clase }} mb-2 align-self-start">{{ estadoStock().etiqueta }}</span>
+
+    @if (cantidadEnCarrito() === 0) {
+      <button class="btn btn-sm btn-danger mt-auto" [disabled]="producto().stock === 0" (click)="agregar()">
+        + Agregar
+      </button>
+    } @else {
+      <div class="d-flex align-items-center justify-content-between mt-auto">
+        <button class="btn btn-sm btn-outline-secondary" (click)="decrementar()">-</button>
+        <span class="fw-semibold">{{ cantidadEnCarrito() }}</span>
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          [disabled]="cantidadEnCarrito() >= producto().stock"
+          (click)="incrementar()"
+        >
+          +
+        </button>
+      </div>
+    }
+  </div>
+</div>
