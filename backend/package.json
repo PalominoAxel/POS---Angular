@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/index.js",
     "pretest": "cross-env DATABASE_URL=file:./prisma/test.db npx prisma migrate deploy && cross-env DATABASE_URL=file:./prisma/test.db npx prisma db seed",
     "test": "cross-env DATABASE_URL=file:./prisma/test.db jest",

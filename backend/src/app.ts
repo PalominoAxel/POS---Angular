@@ -11,7 +11,8 @@ import { cajaRouter } from "./routes/caja.routes";
 export function crearApp(): Application {
   const app = express();
 
-  app.use(cors());
+  const origenesPermitidos = process.env.FRONTEND_URL?.split(",");
+  app.use(cors(origenesPermitidos ? { origin: origenesPermitidos } : undefined));
   app.use(express.json());
 
   app.get("/api/health", (_req, res) => res.json({ estado: "ok" }));
