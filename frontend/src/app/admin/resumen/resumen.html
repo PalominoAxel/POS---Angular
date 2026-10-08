@@ -1,41 +1,50 @@
 <div>
-  <h3 class="mb-4">Resumen General</h3>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="mb-0 fw-bold">Resumen general</h3>
+      <div class="text-muted small">Indicadores del día en tiempo real</div>
+    </div>
+  </div>
 
   @if (resumen(); as r) {
     <div class="row g-3 mb-4">
-      <div class="col-md-3">
-        <div class="card shadow-sm p-3">
-          <div class="text-muted small">Ventas del Día</div>
-          <div class="fs-4 fw-bold">{{ r.ventasDelDia | precioSoles }}</div>
-          <div class="text-muted small">{{ r.numeroVentas }} ventas</div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-ventas">
+          <div class="kpi-label">Ventas totales del día</div>
+          <div class="kpi-value">{{ r.ventasDelDia | precioSoles }}</div>
+          <div class="kpi-footer">{{ r.numeroVentas }} transacciones</div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card shadow-sm p-3">
-          <div class="text-muted small">Ticket Promedio</div>
-          <div class="fs-4 fw-bold">{{ r.ticketPromedio | precioSoles }}</div>
+
+      <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-ticket">
+          <div class="kpi-label">Ticket promedio</div>
+          <div class="kpi-value">{{ r.ticketPromedio | precioSoles }}</div>
+          <div class="kpi-footer">Por transacción</div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card shadow-sm p-3">
-          <div class="text-muted small">IGV Recaudado (Día)</div>
-          <div class="fs-4 fw-bold">{{ r.igvRecaudadoDia | precioSoles }}</div>
+
+      <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-igv">
+          <div class="kpi-label">IGV acumulado (18%)</div>
+          <div class="kpi-value">{{ r.igvRecaudadoDia | precioSoles }}</div>
+          <div class="kpi-footer">Recaudado hoy</div>
         </div>
       </div>
-      <div class="col-md-3">
+
+      <div class="col-sm-6 col-xl-3">
         <button
           type="button"
-          class="card shadow-sm p-3 w-100 text-start border-0"
-          [class.border-warning]="r.alertasStockBajo > 0"
-          style="cursor: pointer"
+          class="kpi-card kpi-stock w-100 text-start border-0"
+          [class.kpi-stock-alerta]="r.alertasStockBajo > 0"
           [disabled]="r.alertasStockBajo === 0"
           (click)="abrirStockBajo()"
         >
-          <div class="text-muted small">Alertas de Stock Bajo</div>
-          <div class="fs-4 fw-bold" [class.text-warning]="r.alertasStockBajo > 0">{{ r.alertasStockBajo }}</div>
-          @if (r.alertasStockBajo > 0) {
-            <div class="text-muted small">Clic para ver detalle</div>
-          }
+          <div class="kpi-label">Alerta de stock crítico</div>
+          <div class="kpi-value">{{ r.alertasStockBajo }}</div>
+          <div class="kpi-footer">
+            {{ r.alertasStockBajo > 0 ? 'Clic para ver detalle (< 15 unid.)' : 'Sin alertas' }}
+          </div>
         </button>
       </div>
     </div>
@@ -81,40 +90,46 @@
   }
 
   <div class="row g-3">
-    <div class="col-md-5">
-      <div class="card shadow-sm p-3">
+    <div class="col-xl-5">
+      <div class="analytics-card">
         <h6 class="fw-semibold mb-3">Top 5 productos más vendidos</h6>
         @if (topProductos().length === 0) {
-          <p class="text-muted small">Aún no hay ventas registradas.</p>
+          <p class="text-muted small mb-0">Aún no hay ventas registradas.</p>
         } @else {
-          <ol class="mb-0">
-            @for (p of topProductos(); track p.productoId) {
-              <li class="d-flex justify-content-between">
-                <span>{{ p.nombre }}</span>
-                <span class="fw-semibold">{{ p.unidadesVendidas }} u.</span>
-              </li>
-            }
-          </ol>
+          @for (p of topProductos(); track p.productoId; let i = $index) {
+            <div class="top-item">
+              <div class="top-item-rank">{{ i + 1 }}</div>
+              <div class="top-item-body">
+                <div class="d-flex justify-content-between small mb-1">
+                  <span class="fw-semibold">{{ p.nombre }}</span>
+                  <span class="text-muted">{{ p.unidadesVendidas }} u.</span>
+                </div>
+                <div class="progress" style="height: 6px">
+                  <div class="progress-bar top-bar" [style.width.%]="porcentajeTop(p.unidadesVendidas)"></div>
+                </div>
+              </div>
+            </div>
+          }
         }
       </div>
     </div>
 
-    <div class="col-md-7">
-      <div class="card shadow-sm p-3">
-        <h6 class="fw-semibold mb-3">Ventas por categoría (hoy)</h6>
+    <div class="col-xl-7">
+      <div class="analytics-card">
+        <h6 class="fw-semibold mb-3">Distribución de ventas por categoría (hoy)</h6>
         @if (cargando()) {
-          <p class="text-muted small">Cargando...</p>
+          <p class="text-muted small mb-0">Cargando...</p>
         } @else if (ventasPorCategoria().length === 0) {
-          <p class="text-muted small">Aún no hay ventas hoy.</p>
+          <p class="text-muted small mb-0">Aún no hay ventas hoy.</p>
         } @else {
           @for (v of ventasPorCategoria(); track v.categoria) {
-            <div class="mb-2">
-              <div class="d-flex justify-content-between small">
-                <span>{{ v.categoria }}</span>
-                <span>{{ v.totalIngresos | precioSoles }}</span>
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="fw-semibold">{{ v.categoria }}</span>
+                <span class="text-muted">{{ v.totalIngresos | precioSoles }}</span>
               </div>
               <div class="progress" style="height: 8px">
-                <div class="progress-bar bg-danger" [style.width.%]="porcentajeBarra(v.totalIngresos)"></div>
+                <div class="progress-bar categoria-bar" [style.width.%]="porcentajeBarra(v.totalIngresos)"></div>
               </div>
             </div>
           }

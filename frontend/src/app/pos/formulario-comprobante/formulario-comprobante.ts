@@ -1,32 +1,40 @@
-import { Component, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ClienteBoleta, ClienteFactura, TipoComprobante } from '../../core/models/venta.model';
 
-type TipoDocumento = 'SIN_DOC' | 'DNI' | 'CE';
+export type TipoDocumento = 'SIN_DOC' | 'DNI' | 'CE';
 
 const LONGITUD_DOCUMENTO: Record<Exclude<TipoDocumento, 'SIN_DOC'>, number> = { DNI: 8, CE: 9 };
+const PATRON_DOCUMENTO: Record<Exclude<TipoDocumento, 'SIN_DOC'>, RegExp> = {
+  DNI: /^\d{8}$/,
+  CE: /^\d{9}$/,
+};
+/** RUC peruano: 11 dígitos, empieza con el tipo de contribuyente (10, 15, 16, 17 o 20). */
+const PATRON_RUC = /^(10|15|16|17|20)\d{9}$/;
 
 @Component({
   selector: 'app-formulario-comprobante',
-  imports: [FormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './formulario-comprobante.html',
 })
 export class FormularioComprobante {
-  tipoComprobante = signal<TipoComprobante>('BOLETA');
+  private readonly fb = inject(FormBuilder);
 
-  tipoDocumento = signal<TipoDocumento>('SIN_DOC');
-  numeroDocumento = signal('');
+  readonly form = this.fb.nonNullable.group({
+    tipoComprobante: this.fb.nonNullable.control<TipoComprobante>('BOLETA'),
+    tipoDocumento: this.fb.nonNullable.control<TipoDocumento>('SIN_DOC'),
+    numeroDocumento: this.fb.nonNullable.control(''),
+    ruc: this.fb.nonNullable.control(''),
+    razonSocial: this.fb.nonNullable.control(''),
+  });
 
-  ruc = signal('');
-  razonSocial = signal('');
+  readonly controls = this.form.controls;
 
   error = signal<string | null>(null);
 
-  readonly maxLengthDocumento = () =>
-    this.tipoDocumento() === 'SIN_DOC' ? 0 : LONGITUD_DOCUMENTO[this.tipoDocumento() as 'DNI' | 'CE'];
-
-  soloNumeros(valor: string, maxLength: number): string {
-    return valor.replace(/\D/g, '').slice(0, maxLength);
+  maxLengthDocumento(): number {
+    const tipo = this.controls.tipoDocumento.value;
+    return tipo === 'SIN_DOC' ? 0 : LONGITUD_DOCUMENTO[tipo];
   }
 
   /** Bloquea a nivel de teclado cualquier tecla que no sea un dígito o una tecla de control (Backspace, flechas, etc.). */
@@ -42,57 +50,96 @@ export class FormularioComprobante {
     }
   }
 
+  onTipoComprobanteChange(): void {
+    this.error.set(null);
+    this.actualizarValidadores();
+  }
+
+  onTipoDocumentoChange(): void {
+    this.controls.numeroDocumento.setValue('');
+    this.actualizarValidadores();
+  }
+
   onNumeroDocumentoInput(valor: string): void {
-    this.numeroDocumento.set(this.soloNumeros(valor, this.maxLengthDocumento()));
+    this.controls.numeroDocumento.setValue(valor.replace(/\D/g, '').slice(0, this.maxLengthDocumento()));
   }
 
   onRucInput(valor: string): void {
-    this.ruc.set(this.soloNumeros(valor, 11));
+    this.controls.ruc.setValue(valor.replace(/\D/g, '').slice(0, 11));
+  }
+
+  private actualizarValidadores(): void {
+    const tipoDoc = this.controls.tipoDocumento.value;
+    if (tipoDoc === 'SIN_DOC') {
+      this.controls.numeroDocumento.clearValidators();
+    } else {
+      this.controls.numeroDocumento.setValidators([Validators.required, Validators.pattern(PATRON_DOCUMENTO[tipoDoc])]);
+    }
+    this.controls.numeroDocumento.updateValueAndValidity();
+
+    const esFactura = this.controls.tipoComprobante.value === 'FACTURA';
+    if (esFactura) {
+      this.controls.ruc.setValidators([Validators.required, Validators.pattern(PATRON_RUC)]);
+      this.controls.razonSocial.setValidators([Validators.required]);
+    } else {
+      this.controls.ruc.clearValidators();
+      this.controls.razonSocial.clearValidators();
+    }
+    this.controls.ruc.updateValueAndValidity();
+    this.controls.razonSocial.updateValueAndValidity();
   }
 
   /** Valida y devuelve los datos listos para enviar, o null si hay errores (mostrados en `error`). */
   obtenerDatos(): { tipoComprobante: TipoComprobante; cliente: ClienteBoleta | ClienteFactura } | null {
     this.error.set(null);
+    this.actualizarValidadores();
+    this.form.markAllAsTouched();
 
-    if (this.tipoComprobante() === 'FACTURA') {
-      if (!/^\d{11}$/.test(this.ruc())) {
-        this.error.set('El RUC debe contener exactamente 11 dígitos numéricos.');
+    const valores = this.form.getRawValue();
+
+    if (valores.tipoComprobante === 'FACTURA') {
+      if (this.controls.ruc.invalid) {
+        this.error.set('El RUC debe contener exactamente 11 dígitos numéricos y empezar con 10, 15, 16, 17 o 20.');
         return null;
       }
-      if (!this.razonSocial().trim()) {
+      if (this.controls.razonSocial.invalid) {
         this.error.set('Ingrese la Razón Social del cliente.');
         return null;
       }
-      const cliente: ClienteFactura = { ruc: this.ruc(), razonSocial: this.razonSocial().trim() };
+      const cliente: ClienteFactura = { ruc: valores.ruc, razonSocial: valores.razonSocial.trim() };
       return { tipoComprobante: 'FACTURA', cliente };
     }
 
-    if (this.tipoDocumento() === 'SIN_DOC') {
+    if (valores.tipoDocumento === 'SIN_DOC') {
       return { tipoComprobante: 'BOLETA', cliente: { tipoDocumento: null, numeroDocumento: null } };
     }
 
-    const documento = this.numeroDocumento().trim();
-    const longitud = LONGITUD_DOCUMENTO[this.tipoDocumento() as 'DNI' | 'CE'];
-
-    if (!documento) {
-      this.error.set(`Ingrese el número de ${this.tipoDocumento()} o seleccione "Sin documento".`);
-      return null;
-    }
-    if (documento.length !== longitud) {
-      this.error.set(`${this.tipoDocumento()}: debe contener exactamente ${longitud} dígitos.`);
+    if (this.controls.numeroDocumento.invalid) {
+      const longitud = LONGITUD_DOCUMENTO[valores.tipoDocumento];
+      this.error.set(
+        valores.numeroDocumento.trim()
+          ? `${valores.tipoDocumento}: debe contener exactamente ${longitud} dígitos.`
+          : `Ingrese el número de ${valores.tipoDocumento} o seleccione "Sin documento".`,
+      );
       return null;
     }
 
-    const cliente: ClienteBoleta = { tipoDocumento: this.tipoDocumento() as 'DNI' | 'CE', numeroDocumento: documento };
+    const cliente: ClienteBoleta = {
+      tipoDocumento: valores.tipoDocumento,
+      numeroDocumento: valores.numeroDocumento.trim(),
+    };
     return { tipoComprobante: 'BOLETA', cliente };
   }
 
   reiniciar(): void {
-    this.tipoComprobante.set('BOLETA');
-    this.tipoDocumento.set('SIN_DOC');
-    this.numeroDocumento.set('');
-    this.ruc.set('');
-    this.razonSocial.set('');
+    this.form.reset({
+      tipoComprobante: 'BOLETA',
+      tipoDocumento: 'SIN_DOC',
+      numeroDocumento: '',
+      ruc: '',
+      razonSocial: '',
+    });
     this.error.set(null);
+    this.actualizarValidadores();
   }
 }

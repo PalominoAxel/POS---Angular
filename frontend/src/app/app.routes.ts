@@ -25,16 +25,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./admin/inventario/inventario-list/inventario-list').then((m) => m.InventarioList),
       },
-      {
-        path: 'inventario/nuevo',
-        loadComponent: () =>
-          import('./admin/inventario/inventario-form/inventario-form').then((m) => m.InventarioForm),
-      },
-      {
-        path: 'inventario/:id/editar',
-        loadComponent: () =>
-          import('./admin/inventario/inventario-form/inventario-form').then((m) => m.InventarioForm),
-      },
       { path: 'ventas', loadComponent: () => import('./admin/ventas/ventas').then((m) => m.Ventas) },
       { path: 'caja', loadComponent: () => import('./admin/caja/caja').then((m) => m.Caja) },
       { path: 'cupones', loadComponent: () => import('./admin/cupones/cupones').then((m) => m.Cupones) },
