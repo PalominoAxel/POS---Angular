@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { CATEGORIAS, Producto } from '../../core/models/producto.model';
+import { Producto } from '../../core/models/producto.model';
+import { Categoria } from '../../core/models/categoria.model';
 import { ProductoService } from '../../core/services/producto.service';
+import { CategoriaService } from '../../core/services/categoria.service';
 import { TarjetaProducto } from '../tarjeta-producto/tarjeta-producto';
 
 @Component({
@@ -10,8 +12,9 @@ import { TarjetaProducto } from '../tarjeta-producto/tarjeta-producto';
 })
 export class CatalogoProductos implements OnInit {
   private readonly productoService = inject(ProductoService);
+  private readonly categoriaService = inject(CategoriaService);
 
-  readonly categorias = CATEGORIAS;
+  categorias = signal<Categoria[]>([]);
   productos = signal<Producto[]>([]);
   cargando = signal(true);
   categoriaSeleccionada = signal<string>('TODAS');
@@ -24,6 +27,7 @@ export class CatalogoProductos implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+    this.categoriaService.listar().subscribe((data) => this.categorias.set(data));
   }
 
   cargar(): void {

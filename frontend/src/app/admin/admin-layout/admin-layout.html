@@ -11,10 +11,28 @@
     <div class="admin-nav">
       @for (item of items; track item.path) {
         <a class="admin-nav-link" [routerLink]="item.path" routerLinkActive="active">
-          <span class="admin-nav-icon">{{ item.icon }}</span>
+          <i class="bi {{ item.icon }} admin-nav-icon"></i>
           <span>{{ item.label }}</span>
         </a>
       }
+    </div>
+
+    <div class="admin-sidebar-spacer"></div>
+
+    <a class="admin-nav-link admin-nav-link-ghost" routerLink="/pos">
+      <i class="bi bi-arrow-left-circle admin-nav-icon"></i>
+      <span>Volver al POS</span>
+    </a>
+
+    <div class="admin-user">
+      <div class="admin-user-avatar">{{ iniciales() }}</div>
+      <div class="admin-user-info">
+        <div class="admin-user-name">{{ usuario()?.nombre }}</div>
+        <div class="admin-user-role">{{ usuario()?.rol }}</div>
+      </div>
+      <button type="button" class="admin-user-logout" title="Cerrar sesión" (click)="cerrarSesion()">
+        <i class="bi bi-box-arrow-right"></i>
+      </button>
     </div>
   </nav>
 

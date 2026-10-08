@@ -1,15 +1,21 @@
 <div>
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-      <h3 class="mb-0 fw-bold">Resumen general</h3>
-      <div class="text-muted small">Indicadores del día en tiempo real</div>
+      <h3 class="mb-0 fw-bold">{{ saludo() }}, {{ nombreUsuario() }}</h3>
+      <div class="text-muted small text-capitalize">{{ fechaFormateada() }}</div>
     </div>
+
+    <button type="button" class="btn-refrescar" (click)="refrescar()" [disabled]="cargando()">
+      <i class="bi bi-arrow-clockwise" [class.girando]="cargando()"></i>
+      Actualizar
+    </button>
   </div>
 
   @if (resumen(); as r) {
     <div class="row g-3 mb-4">
       <div class="col-sm-6 col-xl-3">
         <div class="kpi-card kpi-ventas">
+          <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
           <div class="kpi-label">Ventas totales del día</div>
           <div class="kpi-value">{{ r.ventasDelDia | precioSoles }}</div>
           <div class="kpi-footer">{{ r.numeroVentas }} transacciones</div>
@@ -18,6 +24,7 @@
 
       <div class="col-sm-6 col-xl-3">
         <div class="kpi-card kpi-ticket">
+          <div class="kpi-icon"><i class="bi bi-receipt-cutoff"></i></div>
           <div class="kpi-label">Ticket promedio</div>
           <div class="kpi-value">{{ r.ticketPromedio | precioSoles }}</div>
           <div class="kpi-footer">Por transacción</div>
@@ -26,6 +33,7 @@
 
       <div class="col-sm-6 col-xl-3">
         <div class="kpi-card kpi-igv">
+          <div class="kpi-icon"><i class="bi bi-percent"></i></div>
           <div class="kpi-label">IGV acumulado (18%)</div>
           <div class="kpi-value">{{ r.igvRecaudadoDia | precioSoles }}</div>
           <div class="kpi-footer">Recaudado hoy</div>
@@ -40,6 +48,7 @@
           [disabled]="r.alertasStockBajo === 0"
           (click)="abrirStockBajo()"
         >
+          <div class="kpi-icon"><i class="bi" [class.bi-exclamation-triangle-fill]="r.alertasStockBajo > 0" [class.bi-shield-check]="r.alertasStockBajo === 0"></i></div>
           <div class="kpi-label">Alerta de stock crítico</div>
           <div class="kpi-value">{{ r.alertasStockBajo }}</div>
           <div class="kpi-footer">
@@ -89,11 +98,116 @@
     </div>
   }
 
-  <div class="row g-3">
+  <div class="row g-3 mb-3">
+    <div class="col-xl-7">
+      <div class="analytics-card">
+        <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+          <div>
+            <h6 class="fw-semibold mb-1">Evolución de ventas</h6>
+            <span class="text-muted small">{{ totalEvolucion() | precioSoles }} en total ({{ etiquetaRango() }})</span>
+          </div>
+          <div class="btn-group btn-group-sm" role="group">
+            @for (opcion of opcionesRango; track opcion) {
+              <button
+                type="button"
+                class="btn"
+                [class.btn-danger]="rangoDias() === opcion"
+                [class.btn-outline-secondary]="rangoDias() !== opcion"
+                (click)="cambiarRango(opcion)"
+              >
+                {{ opcion }}d
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (cargando()) {
+          <p class="text-muted small mb-0">Cargando...</p>
+        } @else if (evolucion().length === 0 || totalEvolucion() === 0) {
+          <p class="text-muted small mb-0">Aún no hay ventas registradas en este periodo.</p>
+        } @else {
+          <div class="d-flex">
+            <div class="eje-y-labels">
+              @for (et of etiquetasEjeY(); track et.valor) {
+                <span class="eje-y-label" [style.top.%]="et.top">{{ formatoEjeY(et.valor) }}</span>
+              }
+            </div>
+
+            <div class="flex-grow-1" style="min-width: 0">
+              <svg viewBox="0 0 300 110" class="linea-chart" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ef4444" stop-opacity="0.35" />
+                    <stop offset="100%" stop-color="#ef4444" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                @for (y of lineasGridY(); track y) {
+                  <line x1="0" [attr.y1]="y" x2="300" [attr.y2]="y" stroke="#eef0f4" stroke-width="1" />
+                }
+                <path [attr.d]="areaPath()" fill="url(#areaFill)" stroke="none"></path>
+                <path
+                  [attr.d]="lineaPath()"
+                  fill="none"
+                  stroke="#dc2626"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                @for (p of puntosLinea(); track p.fecha) {
+                  <circle [attr.cx]="p.x" [attr.cy]="p.y" r="2.6" fill="#dc2626"></circle>
+                }
+              </svg>
+
+              <div class="linea-labels-pos">
+                @for (et of etiquetasEjeX(); track et.texto + et.x) {
+                  <span class="linea-label-item" [style.left.%]="(et.x / chartAncho) * 100">{{ et.texto }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
     <div class="col-xl-5">
       <div class="analytics-card">
-        <h6 class="fw-semibold mb-3">Top 5 productos más vendidos</h6>
-        @if (topProductos().length === 0) {
+        <h6 class="fw-semibold mb-3">Ventas por categoría <span class="text-muted small fw-normal">({{ etiquetaRango() }})</span></h6>
+
+        @if (cargando()) {
+          <p class="text-muted small mb-0">Cargando...</p>
+        } @else if (totalCategorias() === 0) {
+          <p class="text-muted small mb-0">Aún no hay ventas en este periodo.</p>
+        } @else {
+          <div class="donut-wrap">
+            <div class="donut" [style.background]="donutGradientCategorias()">
+              <div class="donut-hole">
+                <div class="donut-total">{{ totalCategorias() | precioSoles }}</div>
+                <div class="donut-total-label">Total</div>
+              </div>
+            </div>
+
+            <div class="donut-legend">
+              @for (c of ventasPorCategoria(); track c.categoria; let i = $index) {
+                <div class="legend-item">
+                  <span class="legend-dot" [style.background]="colorCategoria(i)"></span>
+                  <span class="legend-label">{{ c.categoria }}</span>
+                  <span class="legend-valor">{{ c.totalIngresos | precioSoles }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-xl-4">
+      <div class="analytics-card h-100">
+        <h6 class="fw-semibold mb-3">Top 5 productos <span class="text-muted small fw-normal">({{ etiquetaRango() }})</span></h6>
+        @if (cargando()) {
+          <p class="text-muted small mb-0">Cargando...</p>
+        } @else if (topProductos().length === 0) {
           <p class="text-muted small mb-0">Aún no hay ventas registradas.</p>
         } @else {
           @for (p of topProductos(); track p.productoId; let i = $index) {
@@ -114,25 +228,58 @@
       </div>
     </div>
 
-    <div class="col-xl-7">
-      <div class="analytics-card">
-        <h6 class="fw-semibold mb-3">Distribución de ventas por categoría (hoy)</h6>
+    <div class="col-xl-4">
+      <div class="analytics-card h-100">
+        <h6 class="fw-semibold mb-3">Métodos de pago <span class="text-muted small fw-normal">({{ etiquetaRango() }})</span></h6>
+
         @if (cargando()) {
           <p class="text-muted small mb-0">Cargando...</p>
-        } @else if (ventasPorCategoria().length === 0) {
-          <p class="text-muted small mb-0">Aún no hay ventas hoy.</p>
+        } @else if (totalMetodosPago() === 0) {
+          <p class="text-muted small mb-0">Aún no hay ventas en este periodo.</p>
         } @else {
-          @for (v of ventasPorCategoria(); track v.categoria) {
-            <div class="mb-3">
-              <div class="d-flex justify-content-between small mb-1">
-                <span class="fw-semibold">{{ v.categoria }}</span>
-                <span class="text-muted">{{ v.totalIngresos | precioSoles }}</span>
-              </div>
-              <div class="progress" style="height: 8px">
-                <div class="progress-bar categoria-bar" [style.width.%]="porcentajeBarra(v.totalIngresos)"></div>
+          <div class="donut-wrap">
+            <div class="donut" [style.background]="donutGradient()">
+              <div class="donut-hole">
+                <div class="donut-total">{{ totalMetodosPago() | precioSoles }}</div>
+                <div class="donut-total-label">Total</div>
               </div>
             </div>
-          }
+
+            <div class="donut-legend">
+              @for (m of metodosPago(); track m.metodo) {
+                <div class="legend-item">
+                  <span class="legend-dot" [style.background]="colorMetodoPago(m.metodo)"></span>
+                  <span class="legend-label">{{ etiquetaMetodoPago(m.metodo) }}</span>
+                  <span class="legend-valor">{{ m.total | precioSoles }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="col-xl-4">
+      <div class="analytics-card h-100">
+        <h6 class="fw-semibold mb-3">Horas pico <span class="text-muted small fw-normal">(últimos 30 días)</span></h6>
+
+        @if (horasPico().length === 0) {
+          <p class="text-muted small mb-0">Cargando...</p>
+        } @else if (totalVentasHorasPico() === 0) {
+          <p class="text-muted small mb-0">Aún no hay ventas registradas.</p>
+        } @else {
+          <div class="horas-pico-wrap">
+            <div class="horas-pico-chart">
+              @for (h of horasPico(); track h.hora) {
+                <div class="hora-bar-col" [title]="h.hora + 'h: ' + h.cantidadVentas + ' ventas'">
+                  <div class="hora-bar" [style.height.%]="barraAltura(h.cantidadVentas)"></div>
+                  @if (h.hora % 3 === 0) {
+                    <span class="hora-bar-label">{{ h.hora }}</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
         }
       </div>
     </div>

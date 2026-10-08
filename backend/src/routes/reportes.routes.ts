@@ -1,5 +1,13 @@
 import { Router, Request, Response } from "express";
-import { productosStockBajo, resumenDia, topProductos, ventasPorCategoriaHoy } from "../services/reportes.service";
+import {
+  evolucionVentas,
+  horasPico,
+  productosStockBajo,
+  resumenDia,
+  topProductos,
+  ventasPorCategoria,
+  ventasPorMetodoPago,
+} from "../services/reportes.service";
 import { requireAuth, requireRole } from "../middleware/auth.middleware";
 import { asyncHandler } from "../middleware/asyncHandler";
 
@@ -18,14 +26,16 @@ reportesRouter.get(
   "/top-productos",
   asyncHandler(async (req: Request, res: Response) => {
     const limite = req.query.limite ? Number(req.query.limite) : 5;
-    res.json(await topProductos(limite));
+    const dias = req.query.dias ? Number(req.query.dias) : undefined;
+    res.json(await topProductos(limite, dias));
   })
 );
 
 reportesRouter.get(
   "/ventas-por-categoria",
-  asyncHandler(async (_req: Request, res: Response) => {
-    res.json(await ventasPorCategoriaHoy());
+  asyncHandler(async (req: Request, res: Response) => {
+    const dias = req.query.dias ? Number(req.query.dias) : 7;
+    res.json(await ventasPorCategoria(dias));
   })
 );
 
@@ -33,5 +43,28 @@ reportesRouter.get(
   "/stock-bajo",
   asyncHandler(async (_req: Request, res: Response) => {
     res.json(await productosStockBajo());
+  })
+);
+
+reportesRouter.get(
+  "/evolucion-ventas",
+  asyncHandler(async (req: Request, res: Response) => {
+    const dias = req.query.dias ? Number(req.query.dias) : 7;
+    res.json(await evolucionVentas(dias));
+  })
+);
+
+reportesRouter.get(
+  "/ventas-por-metodo-pago",
+  asyncHandler(async (req: Request, res: Response) => {
+    const dias = req.query.dias ? Number(req.query.dias) : 7;
+    res.json(await ventasPorMetodoPago(dias));
+  })
+);
+
+reportesRouter.get(
+  "/horas-pico",
+  asyncHandler(async (_req: Request, res: Response) => {
+    res.json(await horasPico());
   })
 );

@@ -1,4 +1,4 @@
-@if (auth.estaAutenticado()) {
+@if (auth.estaAutenticado() && !enAdmin()) {
   <app-navbar></app-navbar>
 }
 <router-outlet></router-outlet>
