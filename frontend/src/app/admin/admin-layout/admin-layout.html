@@ -1,17 +1,24 @@
-<div class="d-flex">
-  <nav class="bg-dark text-white vh-100 p-3 flex-shrink-0" style="width: 220px; position: sticky; top: 0">
-    <div class="fs-5 fw-bold text-danger mb-4">TAMBO · Admin</div>
-    <div class="nav flex-column gap-1">
-      <a class="nav-link text-white" routerLink="resumen" routerLinkActive="active bg-danger rounded">📊 Resumen</a>
-      <a class="nav-link text-white" routerLink="inventario" routerLinkActive="active bg-danger rounded">📦 Inventario</a>
-      <a class="nav-link text-white" routerLink="ventas" routerLinkActive="active bg-danger rounded">🧾 Ventas</a>
-      <a class="nav-link text-white" routerLink="caja" routerLinkActive="active bg-danger rounded">💰 Caja</a>
-      <a class="nav-link text-white" routerLink="cupones" routerLinkActive="active bg-danger rounded">🎟️ Cupones</a>
-      <a class="nav-link text-white" routerLink="usuarios" routerLinkActive="active bg-danger rounded">👥 Usuarios</a>
+<div class="admin-shell">
+  <nav class="admin-sidebar">
+    <div class="admin-brand">
+      <span class="admin-brand-mark">T</span>
+      <div>
+        <div class="admin-brand-title">TAMBO</div>
+        <div class="admin-brand-subtitle">Panel Admin</div>
+      </div>
+    </div>
+
+    <div class="admin-nav">
+      @for (item of items; track item.path) {
+        <a class="admin-nav-link" [routerLink]="item.path" routerLinkActive="active">
+          <span class="admin-nav-icon">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </a>
+      }
     </div>
   </nav>
 
-  <div class="flex-grow-1 p-4" style="min-width: 0">
+  <div class="admin-content">
     <router-outlet />
   </div>
 </div>

@@ -8,6 +8,7 @@ import { CapitalizarPipe } from '../../shared/pipes/capitalizar.pipe';
   selector: 'app-resumen',
   imports: [PrecioSolesPipe, CapitalizarPipe],
   templateUrl: './resumen.html',
+  styleUrl: './resumen.scss',
 })
 export class Resumen implements OnInit {
   private readonly reporteService = inject(ReporteService);
@@ -25,6 +26,10 @@ export class Resumen implements OnInit {
     Math.max(1, ...this.ventasPorCategoria().map((v) => v.totalIngresos)),
   );
 
+  readonly maxUnidadesTop = computed(() =>
+    Math.max(1, ...this.topProductos().map((p) => p.unidadesVendidas)),
+  );
+
   ngOnInit(): void {
     this.reporteService.resumenDia().subscribe((r) => this.resumen.set(r));
     this.reporteService.topProductos(5).subscribe((t) => this.topProductos.set(t));
@@ -36,6 +41,10 @@ export class Resumen implements OnInit {
 
   porcentajeBarra(valor: number): number {
     return Math.round((valor / this.maxIngresoCategoria()) * 100);
+  }
+
+  porcentajeTop(valor: number): number {
+    return Math.round((valor / this.maxUnidadesTop()) * 100);
   }
 
   abrirStockBajo(): void {

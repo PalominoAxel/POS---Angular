@@ -7,8 +7,8 @@
     "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/index.js",
-    "pretest": "cross-env DATABASE_URL=file:./prisma/test.db npx prisma migrate deploy && cross-env DATABASE_URL=file:./prisma/test.db npx prisma db seed",
-    "test": "cross-env DATABASE_URL=file:./prisma/test.db jest",
+    "pretest": "node scripts/with-test-db.js npx prisma migrate deploy && node scripts/with-test-db.js npx prisma db seed",
+    "test": "node scripts/with-test-db.js npx jest",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
     "prisma:studio": "prisma studio"
