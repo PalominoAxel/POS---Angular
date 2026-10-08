@@ -1,11 +1,14 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CATEGORIAS, Producto } from '../../../core/models/producto.model';
+import { Producto } from '../../../core/models/producto.model';
+import { Categoria } from '../../../core/models/categoria.model';
 import { ProductoService } from '../../../core/services/producto.service';
+import { CategoriaService } from '../../../core/services/categoria.service';
 import { CapitalizarPipe } from '../../../shared/pipes/capitalizar.pipe';
 import { PrecioSolesPipe } from '../../../shared/pipes/precio-soles.pipe';
 
 const PRODUCTOS_POR_PAGINA = 8;
+const NUEVA_CATEGORIA_VALOR = '__nueva__';
 
 export type EstadoStock = 'ALTO' | 'CRITICO' | 'AGOTADO';
 
@@ -16,9 +19,11 @@ export type EstadoStock = 'ALTO' | 'CRITICO' | 'AGOTADO';
 })
 export class InventarioList implements OnInit {
   private readonly productoService = inject(ProductoService);
+  private readonly categoriaService = inject(CategoriaService);
   private readonly fb = inject(FormBuilder);
 
-  readonly categorias = CATEGORIAS;
+  readonly nuevaCategoriaValor = NUEVA_CATEGORIA_VALOR;
+  categorias = signal<Categoria[]>([]);
   productos = signal<Producto[]>([]);
   cargando = signal(true);
   error = signal<string | null>(null);
@@ -32,9 +37,14 @@ export class InventarioList implements OnInit {
   guardando = signal(false);
   errorModal = signal<string | null>(null);
 
+  mostrarNuevaCategoria = signal(false);
+  nuevaCategoriaNombre = signal('');
+  guardandoCategoria = signal(false);
+  errorNuevaCategoria = signal<string | null>(null);
+
   form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.minLength(3)]],
-    categoria: [CATEGORIAS[0] as string, Validators.required],
+    categoria: ['', Validators.required],
     precioRegular: [0, [Validators.required, Validators.min(0.01)]],
     precioOferta: [0, [Validators.required, Validators.min(0)]],
     stock: [0, [Validators.required, Validators.min(0)]],
@@ -62,6 +72,7 @@ export class InventarioList implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+    this.cargarCategorias();
   }
 
   cargar(): void {
@@ -76,6 +87,10 @@ export class InventarioList implements OnInit {
         this.cargando.set(false);
       },
     });
+  }
+
+  cargarCategorias(): void {
+    this.categoriaService.listar().subscribe((data) => this.categorias.set(data));
   }
 
   irAPagina(pagina: number): void {
@@ -102,7 +117,7 @@ export class InventarioList implements OnInit {
     this.errorModal.set(null);
     this.form.reset({
       nombre: '',
-      categoria: CATEGORIAS[0],
+      categoria: this.categorias()[0]?.nombre ?? '',
       precioRegular: 0,
       precioOferta: 0,
       stock: 0,
@@ -131,6 +146,46 @@ export class InventarioList implements OnInit {
     this.mostrarModal.set(false);
     this.guardando.set(false);
     this.errorModal.set(null);
+    this.cancelarNuevaCategoria();
+  }
+
+  onCategoriaChange(valor: string): void {
+    if (valor === this.nuevaCategoriaValor) {
+      this.mostrarNuevaCategoria.set(true);
+      this.nuevaCategoriaNombre.set('');
+      this.errorNuevaCategoria.set(null);
+      return;
+    }
+    this.form.controls.categoria.setValue(valor);
+  }
+
+  cancelarNuevaCategoria(): void {
+    this.mostrarNuevaCategoria.set(false);
+    this.nuevaCategoriaNombre.set('');
+    this.errorNuevaCategoria.set(null);
+    this.guardandoCategoria.set(false);
+  }
+
+  confirmarNuevaCategoria(): void {
+    const nombre = this.nuevaCategoriaNombre().trim();
+    if (!nombre) {
+      this.errorNuevaCategoria.set('Escribe un nombre para la categoría.');
+      return;
+    }
+
+    this.guardandoCategoria.set(true);
+    this.errorNuevaCategoria.set(null);
+    this.categoriaService.crear(nombre).subscribe({
+      next: (categoria) => {
+        this.categorias.update((lista) => [...lista, categoria].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+        this.form.controls.categoria.setValue(categoria.nombre);
+        this.cancelarNuevaCategoria();
+      },
+      error: (err) => {
+        this.errorNuevaCategoria.set(err.error?.mensaje ?? 'No se pudo crear la categoría.');
+        this.guardandoCategoria.set(false);
+      },
+    });
   }
 
   guardar(): void {

@@ -84,6 +84,14 @@ async function sembrarUsuarios() {
   console.log("Usuarios por defecto: admin/admin123 (ADMIN), cajero/cajero123 (CAJERO) — cambiar en producción.");
 }
 
+const CATEGORIAS_BASE = ["Bebidas", "Snacks", "Comida Rápida", "Abarrotes"];
+
+async function sembrarCategorias() {
+  for (const nombre of CATEGORIAS_BASE) {
+    await prisma.categoria.upsert({ where: { nombre }, create: { nombre }, update: {} });
+  }
+}
+
 async function sembrarCupones() {
   for (const c of CUPONES) {
     await prisma.cupon.upsert({
@@ -115,6 +123,7 @@ async function sembrarProductos() {
 
 async function main() {
   await sembrarUsuarios();
+  await sembrarCategorias();
   await sembrarCupones();
   await sembrarProductos();
 }

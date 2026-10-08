@@ -1,10 +1,10 @@
 <div>
-  <h6 class="fw-semibold mb-2">🛒 Carrito</h6>
+  <h6 class="fw-semibold mb-2"><i class="bi bi-cart3 me-1"></i>Carrito</h6>
 
   @if (carrito.items().length === 0) {
     <p class="text-muted small">El carrito está vacío.</p>
   } @else {
-    <ul class="list-group list-group-flush mb-2">
+    <ul class="list-group list-group-flush mb-2 carrito-items">
       @for (item of carrito.items(); track item.productoId) {
         <li class="list-group-item px-0">
           <div class="d-flex justify-content-between align-items-start">
@@ -12,7 +12,9 @@
               <div class="fw-semibold">{{ item.nombre }}</div>
               <div class="text-muted">{{ item.precioOferta | precioSoles }} c/u</div>
             </div>
-            <button class="btn btn-sm btn-link text-danger p-0" (click)="quitar(item.productoId)">✕</button>
+            <button class="btn btn-sm btn-link text-danger p-0" (click)="quitar(item.productoId)">
+              <i class="bi bi-x-lg"></i>
+            </button>
           </div>
           <div class="d-flex align-items-center justify-content-between mt-1">
             <div class="btn-group btn-group-sm">

@@ -23,6 +23,21 @@ export interface VentaPorCategoria {
   totalIngresos: number;
 }
 
+export interface EvolucionVenta {
+  fecha: string;
+  total: number;
+}
+
+export interface VentaPorMetodoPago {
+  metodo: string;
+  total: number;
+}
+
+export interface HoraPico {
+  hora: number;
+  cantidadVentas: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ReporteService {
   private readonly http = inject(HttpClient);
@@ -32,15 +47,28 @@ export class ReporteService {
     return this.http.get<ResumenDia>(`${this.baseUrl}/resumen-dia`);
   }
 
-  topProductos(limite = 5): Observable<TopProducto[]> {
-    return this.http.get<TopProducto[]>(`${this.baseUrl}/top-productos?limite=${limite}`);
+  topProductos(limite = 5, dias?: number): Observable<TopProducto[]> {
+    const query = dias ? `?limite=${limite}&dias=${dias}` : `?limite=${limite}`;
+    return this.http.get<TopProducto[]>(`${this.baseUrl}/top-productos${query}`);
   }
 
-  ventasPorCategoria(): Observable<VentaPorCategoria[]> {
-    return this.http.get<VentaPorCategoria[]>(`${this.baseUrl}/ventas-por-categoria`);
+  ventasPorCategoria(dias = 7): Observable<VentaPorCategoria[]> {
+    return this.http.get<VentaPorCategoria[]>(`${this.baseUrl}/ventas-por-categoria?dias=${dias}`);
   }
 
   stockBajo(): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.baseUrl}/stock-bajo`);
+  }
+
+  evolucionVentas(dias = 7): Observable<EvolucionVenta[]> {
+    return this.http.get<EvolucionVenta[]>(`${this.baseUrl}/evolucion-ventas?dias=${dias}`);
+  }
+
+  ventasPorMetodoPago(dias = 7): Observable<VentaPorMetodoPago[]> {
+    return this.http.get<VentaPorMetodoPago[]>(`${this.baseUrl}/ventas-por-metodo-pago?dias=${dias}`);
+  }
+
+  horasPico(): Observable<HoraPico[]> {
+    return this.http.get<HoraPico[]>(`${this.baseUrl}/horas-pico`);
   }
 }

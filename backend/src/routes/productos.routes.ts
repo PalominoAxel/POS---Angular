@@ -6,7 +6,7 @@ import {
   actualizarProducto,
   eliminarProducto,
 } from "../data/productos.store";
-import { CATEGORIAS } from "../models/producto";
+import { existeCategoriaActiva } from "../data/categorias.store";
 import { requireAuth, requireRole } from "../middleware/auth.middleware";
 import { asyncHandler } from "../middleware/asyncHandler";
 
@@ -39,8 +39,8 @@ productosRouter.post(
     if (!nombre || !categoria || precioRegular == null || stock == null) {
       return res.status(400).json({ mensaje: "Datos de producto incompletos" });
     }
-    if (!(CATEGORIAS as readonly string[]).includes(categoria)) {
-      return res.status(400).json({ mensaje: `Categoría inválida. Use una de: ${CATEGORIAS.join(", ")}` });
+    if (!(await existeCategoriaActiva(categoria))) {
+      return res.status(400).json({ mensaje: `Categoría inválida: "${categoria}" no existe. Crea la categoría primero.` });
     }
     if (Number(precioRegular) <= 0 || Number(stock) < 0 || !Number.isInteger(Number(stock))) {
       return res.status(400).json({ mensaje: "Precio regular debe ser mayor a 0 y stock un entero ≥ 0" });

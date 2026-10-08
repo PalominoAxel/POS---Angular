@@ -7,6 +7,7 @@ import { reportesRouter } from "./routes/reportes.routes";
 import { usuariosRouter } from "./routes/usuarios.routes";
 import { cuponesRouter } from "./routes/cupones.routes";
 import { cajaRouter } from "./routes/caja.routes";
+import { categoriasRouter } from "./routes/categorias.routes";
 
 export function crearApp(): Application {
   const app = express();
@@ -23,6 +24,7 @@ export function crearApp(): Application {
   app.use("/api/usuarios", usuariosRouter);
   app.use("/api/cupones", cuponesRouter);
   app.use("/api/caja", cajaRouter);
+  app.use("/api/categorias", categoriasRouter);
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error(err);

@@ -38,6 +38,26 @@
   opacity: 0.55;
 }
 
+.carrito-items {
+  max-height: 32vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #dc3545 #f1f1f1;
+}
+
+.carrito-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.carrito-items::-webkit-scrollbar-thumb {
+  background: #dc3545;
+  border-radius: 999px;
+}
+
+.carrito-items::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
 @media print {
   body * {
     visibility: hidden;
