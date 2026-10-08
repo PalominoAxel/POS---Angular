@@ -21,4 +21,9 @@ export class Carrito {
   quitar(productoId: number): void {
     this.carrito.quitar(productoId);
   }
+
+  vaciarCarrito(): void {
+    if (!confirm('¿Vaciar el carrito? Se quitarán todos los productos agregados.')) return;
+    this.carrito.vaciar();
+  }
 }
