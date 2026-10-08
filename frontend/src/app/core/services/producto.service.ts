@@ -28,4 +28,10 @@ export class ProductoService {
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  subirImagen(archivo: File): Observable<{ imagenUrl: string }> {
+    const formData = new FormData();
+    formData.append('imagen', archivo);
+    return this.http.post<{ imagenUrl: string }>(`${this.baseUrl}/imagen`, formData);
+  }
 }

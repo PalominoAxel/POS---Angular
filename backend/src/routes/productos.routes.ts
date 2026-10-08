@@ -9,6 +9,7 @@ import {
 import { existeCategoriaActiva } from "../data/categorias.store";
 import { requireAuth, requireRole } from "../middleware/auth.middleware";
 import { asyncHandler } from "../middleware/asyncHandler";
+import { uploadImagenProducto } from "../middleware/upload.middleware";
 
 export const productosRouter = Router();
 
@@ -20,6 +21,20 @@ productosRouter.get(
     res.json(await listarProductos());
   })
 );
+
+productosRouter.post("/imagen", requireRole("ADMIN"), (req: Request, res: Response) => {
+  uploadImagenProducto(req, res, (error: unknown) => {
+    if (error) {
+      const mensaje = error instanceof Error ? error.message : "No se pudo subir la imagen.";
+      return res.status(400).json({ mensaje });
+    }
+    if (!req.file) {
+      return res.status(400).json({ mensaje: "No se recibió ningún archivo." });
+    }
+    const imagenUrl = `${req.protocol}://${req.get("host")}/uploads/productos/${req.file.filename}`;
+    res.status(201).json({ imagenUrl });
+  });
+});
 
 productosRouter.get(
   "/:id",

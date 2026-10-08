@@ -8,13 +8,18 @@ import { usuariosRouter } from "./routes/usuarios.routes";
 import { cuponesRouter } from "./routes/cupones.routes";
 import { cajaRouter } from "./routes/caja.routes";
 import { categoriasRouter } from "./routes/categorias.routes";
+import { DIRECTORIO_UPLOADS } from "./middleware/upload.middleware";
 
 export function crearApp(): Application {
   const app = express();
 
+  // Railway hace proxy de TLS; sin esto, req.protocol reportaría "http" y las URLs de imagen quedarían mal.
+  app.set("trust proxy", true);
+
   const origenesPermitidos = process.env.FRONTEND_URL?.split(",");
   app.use(cors(origenesPermitidos ? { origin: origenesPermitidos } : undefined));
   app.use(express.json());
+  app.use("/uploads/productos", express.static(DIRECTORIO_UPLOADS));
 
   app.get("/api/health", (_req, res) => res.json({ estado: "ok" }));
   app.use("/api/auth", authRouter);

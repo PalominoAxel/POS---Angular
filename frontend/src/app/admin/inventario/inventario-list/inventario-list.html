@@ -177,10 +177,34 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">URL de imagen</label>
-                <input class="form-control" placeholder="img/productos/p001.jpg" formControlName="imagenUrl" />
+                <label class="form-label">Imagen del producto</label>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="imagen-preview">
+                    @if (imagenPreview()) {
+                      <img [src]="imagenPreview()" alt="Vista previa" />
+                    } @else {
+                      <i class="bi bi-image text-muted"></i>
+                    }
+                  </div>
+                  <div class="flex-grow-1">
+                    <input
+                      type="file"
+                      class="form-control form-control-sm"
+                      accept="image/jpeg,image/png,image/webp"
+                      [disabled]="subiendoImagen()"
+                      (change)="seleccionarImagen($event)"
+                    />
+                    <div class="form-text">JPG, PNG o WEBP, máximo 5 MB.</div>
+                    @if (subiendoImagen()) {
+                      <div class="text-muted small"><i class="bi bi-arrow-repeat girando me-1"></i>Subiendo imagen...</div>
+                    }
+                    @if (errorImagen()) {
+                      <div class="text-danger small">{{ errorImagen() }}</div>
+                    }
+                  </div>
+                </div>
                 @if (form.controls.imagenUrl.invalid && form.controls.imagenUrl.touched) {
-                  <div class="form-text text-danger">La imagen es obligatoria.</div>
+                  <div class="form-text text-danger">Sube una imagen para el producto.</div>
                 }
               </div>
 

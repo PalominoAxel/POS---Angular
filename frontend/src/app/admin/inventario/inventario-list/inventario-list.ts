@@ -42,6 +42,10 @@ export class InventarioList implements OnInit {
   guardandoCategoria = signal(false);
   errorNuevaCategoria = signal<string | null>(null);
 
+  imagenPreview = signal('');
+  subiendoImagen = signal(false);
+  errorImagen = signal<string | null>(null);
+
   form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.minLength(3)]],
     categoria: ['', Validators.required],
@@ -115,6 +119,8 @@ export class InventarioList implements OnInit {
   abrirNuevo(): void {
     this.productoEditandoId.set(null);
     this.errorModal.set(null);
+    this.errorImagen.set(null);
+    this.imagenPreview.set('');
     this.form.reset({
       nombre: '',
       categoria: this.categorias()[0]?.nombre ?? '',
@@ -130,6 +136,8 @@ export class InventarioList implements OnInit {
   abrirEditar(producto: Producto): void {
     this.productoEditandoId.set(producto.id);
     this.errorModal.set(null);
+    this.errorImagen.set(null);
+    this.imagenPreview.set(producto.imagenUrl);
     this.form.reset({
       nombre: producto.nombre,
       categoria: producto.categoria,
@@ -146,7 +154,40 @@ export class InventarioList implements OnInit {
     this.mostrarModal.set(false);
     this.guardando.set(false);
     this.errorModal.set(null);
+    this.errorImagen.set(null);
     this.cancelarNuevaCategoria();
+  }
+
+  seleccionarImagen(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+    input.value = '';
+    if (!archivo) return;
+
+    this.errorImagen.set(null);
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type)) {
+      this.errorImagen.set('Formato no soportado. Usa JPG, PNG o WEBP.');
+      return;
+    }
+    if (archivo.size > 5 * 1024 * 1024) {
+      this.errorImagen.set('La imagen no puede superar los 5 MB.');
+      return;
+    }
+
+    this.subiendoImagen.set(true);
+    this.productoService.subirImagen(archivo).subscribe({
+      next: ({ imagenUrl }) => {
+        this.form.controls.imagenUrl.setValue(imagenUrl);
+        this.form.controls.imagenUrl.markAsTouched();
+        this.imagenPreview.set(imagenUrl);
+        this.subiendoImagen.set(false);
+      },
+      error: (err) => {
+        this.errorImagen.set(err.error?.mensaje ?? 'No se pudo subir la imagen.');
+        this.subiendoImagen.set(false);
+      },
+    });
   }
 
   onCategoriaChange(valor: string): void {

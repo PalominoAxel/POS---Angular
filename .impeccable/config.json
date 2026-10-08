@@ -11,6 +11,24 @@
         ],
         "createdAt": "2026-10-08T21:44:28.319Z",
         "reason": "badge-stock es un pill/chip de estado de 0.4rem/0.75rem; el padding reducido es la convencion estandar de badges compactos (igual que el .badge de Bootstrap), no un descuido"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "frontend/src/app/admin/resumen/resumen.html"
+        ],
+        "createdAt": "2026-10-08T22:35:08.300Z",
+        "reason": "selector de rango 7d/30d/90d usa .btn-group .btn-sm de Bootstrap (padding 0.25rem/0.5rem por defecto), mismo patron ya usado en el selector de metodo de pago del POS; achicarlo rompería la consistencia con ese componente ya existente"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "frontend/src/app/admin/inventario/inventario-list/inventario-list.html"
+        ],
+        "createdAt": "2026-10-08T22:40:15.781Z",
+        "reason": "el <img [src]=imagenPreview()> solo se renderiza dentro de @if (imagenPreview()), nunca con src vacio en runtime; el scanner estatico no evalua el control flow de Angular. Cuando no hay imagen se muestra un icono placeholder en el @else, no el <img>"
       }
     ]
   }
