@@ -15,6 +15,7 @@ export class AdminLayout {
   readonly items = [
     { path: 'resumen', icon: 'bi-grid-1x2-fill', label: 'Resumen' },
     { path: 'inventario', icon: 'bi-box-seam-fill', label: 'Inventario' },
+    { path: 'categorias', icon: 'bi-tags-fill', label: 'Categorías' },
     { path: 'ventas', icon: 'bi-receipt', label: 'Ventas' },
     { path: 'caja', icon: 'bi-cash-coin', label: 'Caja' },
     { path: 'cupones', icon: 'bi-ticket-perforated-fill', label: 'Cupones' },

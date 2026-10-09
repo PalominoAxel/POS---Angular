@@ -1,0 +1,51 @@
+<div>
+  <div class="mb-3">
+    <h3 class="mb-0 fw-bold">Categorías</h3>
+    <div class="text-muted small">Las categorías disponibles al crear o editar un producto.</div>
+  </div>
+
+  <div class="table-card mb-3" style="max-width: 480px">
+    <div class="p-3 border-bottom">
+      <label class="form-label small fw-semibold mb-1">Nueva categoría</label>
+      <div class="d-flex gap-2">
+        <input
+          class="form-control"
+          placeholder="Ej. Helados"
+          [ngModel]="nombreNueva()"
+          (ngModelChange)="nombreNueva.set($event)"
+          (keydown.enter)="crear()"
+          [disabled]="guardando()"
+        />
+        <button type="button" class="btn btn-danger text-nowrap" [disabled]="guardando()" (click)="crear()">
+          {{ guardando() ? 'Agregando...' : '+ Agregar' }}
+        </button>
+      </div>
+      @if (error()) {
+        <div class="form-text text-danger">{{ error() }}</div>
+      }
+    </div>
+
+    @if (cargando()) {
+      <p class="text-muted small p-3 mb-0">Cargando...</p>
+    } @else {
+      <table class="table table-striped mb-0">
+        <tbody>
+          @for (categoria of categorias(); track categoria.id) {
+            <tr>
+              <td class="align-middle">{{ categoria.nombre }}</td>
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminar(categoria)">
+                  <i class="bi bi-trash3 me-1"></i>Desactivar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td class="text-center text-muted py-3">No hay categorías activas.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

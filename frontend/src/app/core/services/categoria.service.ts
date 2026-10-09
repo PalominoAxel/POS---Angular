@@ -16,4 +16,8 @@ export class CategoriaService {
   crear(nombre: string): Observable<Categoria> {
     return this.http.post<Categoria>(this.baseUrl, { nombre });
   }
+
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
 }

@@ -28,6 +28,10 @@ export const routes: Routes = [
       { path: 'ventas', loadComponent: () => import('./admin/ventas/ventas').then((m) => m.Ventas) },
       { path: 'caja', loadComponent: () => import('./admin/caja/caja').then((m) => m.Caja) },
       { path: 'cupones', loadComponent: () => import('./admin/cupones/cupones').then((m) => m.Cupones) },
+      {
+        path: 'categorias',
+        loadComponent: () => import('./admin/categorias/categorias').then((m) => m.Categorias),
+      },
       { path: 'usuarios', loadComponent: () => import('./admin/usuarios/usuarios').then((m) => m.Usuarios) },
     ],
   },
