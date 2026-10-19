@@ -23,8 +23,10 @@ export async function abrirCaja(usuarioId: number, montoApertura: number) {
   if (abierta) throw new CajaError("Ya hay una caja abierta. Ciérrala antes de abrir una nueva.", 409);
   if (montoApertura < 0) throw new CajaError("El monto de apertura no puede ser negativo.");
 
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId }, select: { nombre: true } });
+
   return prisma.cajaSesion.create({
-    data: { montoApertura, usuarioAperturaId: usuarioId },
+    data: { montoApertura, usuarioAperturaId: usuarioId, nombreApertura: usuario?.nombre ?? "" },
     include: { usuarioApertura: { select: { id: true, nombre: true } } },
   });
 }
@@ -71,6 +73,7 @@ export async function cerrarCaja(usuarioId: number, montoCierreDeclarado: number
   if (montoCierreDeclarado < 0) throw new CajaError("El monto declarado no puede ser negativo.");
 
   const resumenPrevio = await resumenCaja(abierta.id);
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId }, select: { nombre: true } });
 
   const cerrada = await prisma.cajaSesion.update({
     where: { id: abierta.id },
@@ -79,6 +82,7 @@ export async function cerrarCaja(usuarioId: number, montoCierreDeclarado: number
       fechaCierre: new Date(),
       montoCierreDeclarado,
       usuarioCierreId: usuarioId,
+      nombreCierre: usuario?.nombre ?? "",
     },
     include: {
       usuarioApertura: { select: { id: true, nombre: true } },

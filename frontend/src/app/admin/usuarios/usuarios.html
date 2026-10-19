@@ -1,13 +1,109 @@
 <div>
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">Usuarios</h3>
-    <button class="btn btn-danger" (click)="mostrarForm.set(!mostrarForm())">
-      {{ mostrarForm() ? 'Cancelar' : '+ Nuevo usuario' }}
+    <h3 class="mb-0">Cajeros</h3>
+    <button class="btn btn-danger" (click)="mostrarFormCajero.set(!mostrarFormCajero())">
+      {{ mostrarFormCajero() ? 'Cancelar' : '+ Nuevo cajero' }}
     </button>
   </div>
 
-  @if (mostrarForm()) {
-    <form [formGroup]="form" (ngSubmit)="crear()" class="card p-3 mb-3" style="max-width: 500px">
+  @if (mostrarFormCajero()) {
+    <form [formGroup]="formCajero" (ngSubmit)="crearCajero()" class="card p-3 mb-3" style="max-width: 500px">
+      <div class="mb-2">
+        <label class="form-label">Nombre de usuario</label>
+        <input class="form-control" formControlName="nombreUsuario" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Nombre completo</label>
+        <input class="form-control" formControlName="nombre" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Contraseña</label>
+        <input type="password" class="form-control" formControlName="password" />
+      </div>
+      @if (error()) {
+        <div class="alert alert-danger py-2">{{ error() }}</div>
+      }
+      <button type="submit" class="btn btn-danger" [disabled]="enviando()">
+        {{ enviando() ? 'Creando...' : 'Crear cajero' }}
+      </button>
+    </form>
+  }
+
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Nombre</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (usuario of cajeros(); track usuario.id) {
+        <tr>
+          <td>{{ usuario.nombreUsuario }}</td>
+          <td>{{ usuario.nombre }}</td>
+          <td>
+            <span class="badge" [class.text-bg-success]="usuario.activo" [class.text-bg-secondary]="!usuario.activo">
+              {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-secondary me-1" (click)="cambiarEstado(usuario)">
+              {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+            </button>
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="iniciarEdicion(usuario)">Editar</button>
+            <button class="btn btn-sm btn-outline-danger" (click)="eliminar(usuario)">Eliminar</button>
+          </td>
+        </tr>
+        @if (editando() === usuario.id) {
+          <tr>
+            <td colspan="4">
+              <form [formGroup]="formEdicion" (ngSubmit)="guardarEdicion(usuario)" class="card p-3">
+                <div class="row g-2">
+                  <div class="col-md-4">
+                    <label class="form-label small">Nuevo nombre</label>
+                    <input class="form-control form-control-sm" formControlName="nombre" />
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small">Nueva contraseña</label>
+                    <input type="password" class="form-control form-control-sm" formControlName="password" />
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small">Token de administrador</label>
+                    <input type="password" class="form-control form-control-sm" formControlName="token" />
+                  </div>
+                </div>
+                @if (errorEdicion()) {
+                  <div class="alert alert-danger py-2 mt-2 mb-0">{{ errorEdicion() }}</div>
+                }
+                <div class="mt-2">
+                  <button type="submit" class="btn btn-sm btn-danger me-1">Guardar</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicion()">Cancelar</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+        }
+      } @empty {
+        <tr>
+          <td colspan="4" class="text-muted text-center py-3">No hay cajeros registrados.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <hr class="my-4" />
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Administradores</h3>
+    <button class="btn btn-outline-danger" (click)="mostrarFormAdmin.set(!mostrarFormAdmin())">
+      {{ mostrarFormAdmin() ? 'Cancelar' : '+ Nuevo administrador' }}
+    </button>
+  </div>
+
+  @if (mostrarFormAdmin()) {
+    <form [formGroup]="formAdmin" (ngSubmit)="crearAdmin()" class="card p-3 mb-3" style="max-width: 500px">
       <div class="mb-2">
         <label class="form-label">Nombre de usuario</label>
         <input class="form-control" formControlName="nombreUsuario" />
@@ -21,17 +117,14 @@
         <input type="password" class="form-control" formControlName="password" />
       </div>
       <div class="mb-2">
-        <label class="form-label">Rol</label>
-        <select class="form-select" formControlName="rol">
-          <option value="CAJERO">Cajero</option>
-          <option value="ADMIN">Administrador</option>
-        </select>
+        <label class="form-label">Token de administrador</label>
+        <input type="password" class="form-control" formControlName="token" />
       </div>
-      @if (error()) {
-        <div class="alert alert-danger py-2">{{ error() }}</div>
+      @if (errorAdmin()) {
+        <div class="alert alert-danger py-2">{{ errorAdmin() }}</div>
       }
       <button type="submit" class="btn btn-danger" [disabled]="enviando()">
-        {{ enviando() ? 'Creando...' : 'Crear usuario' }}
+        {{ enviando() ? 'Creando...' : 'Crear administrador' }}
       </button>
     </form>
   }
@@ -41,27 +134,60 @@
       <tr>
         <th>Usuario</th>
         <th>Nombre</th>
-        <th>Rol</th>
         <th>Estado</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
-      @for (usuario of usuarios(); track usuario.id) {
+      @for (usuario of administradores(); track usuario.id) {
         <tr>
           <td>{{ usuario.nombreUsuario }}</td>
           <td>{{ usuario.nombre }}</td>
-          <td>{{ usuario.rol }}</td>
           <td>
             <span class="badge" [class.text-bg-success]="usuario.activo" [class.text-bg-secondary]="!usuario.activo">
               {{ usuario.activo ? 'Activo' : 'Inactivo' }}
             </span>
           </td>
-          <td>
-            <button class="btn btn-sm btn-outline-secondary" (click)="cambiarEstado(usuario)">
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-secondary me-1" (click)="cambiarEstado(usuario)">
               {{ usuario.activo ? 'Desactivar' : 'Activar' }}
             </button>
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="iniciarEdicion(usuario)">Editar</button>
+            <button class="btn btn-sm btn-outline-danger" (click)="eliminar(usuario)">Eliminar</button>
           </td>
+        </tr>
+        @if (editando() === usuario.id) {
+          <tr>
+            <td colspan="4">
+              <form [formGroup]="formEdicion" (ngSubmit)="guardarEdicion(usuario)" class="card p-3">
+                <div class="row g-2">
+                  <div class="col-md-4">
+                    <label class="form-label small">Nuevo nombre</label>
+                    <input class="form-control form-control-sm" formControlName="nombre" />
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small">Nueva contraseña</label>
+                    <input type="password" class="form-control form-control-sm" formControlName="password" />
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small">Token de administrador</label>
+                    <input type="password" class="form-control form-control-sm" formControlName="token" />
+                  </div>
+                </div>
+                @if (errorEdicion()) {
+                  <div class="alert alert-danger py-2 mt-2 mb-0">{{ errorEdicion() }}</div>
+                }
+                <div class="mt-2">
+                  <button type="submit" class="btn btn-sm btn-danger me-1">Guardar</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicion()">Cancelar</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+        }
+      } @empty {
+        <tr>
+          <td colspan="4" class="text-muted text-center py-3">No hay administradores registrados.</td>
         </tr>
       }
     </tbody>

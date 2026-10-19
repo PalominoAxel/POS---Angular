@@ -8,30 +8,30 @@ datasource db {
 }
 
 model Usuario {
-  id                   Int          @id @default(autoincrement())
-  nombreUsuario        String       @unique
-  passwordHash         String
-  nombre               String
-  rol                  String
-  activo               Boolean      @default(true)
-  createdAt            DateTime     @default(now())
-  ventas               Venta[]
-  cajasAbiertas        CajaSesion[] @relation("AperturaCaja")
-  cajasCerradas        CajaSesion[] @relation("CierreCaja")
+  id            Int          @id @default(autoincrement())
+  nombreUsuario String       @unique
+  passwordHash  String
+  nombre        String
+  rol           String
+  activo        Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  ventas        Venta[]
+  cajasAbiertas CajaSesion[] @relation("AperturaCaja")
+  cajasCerradas CajaSesion[] @relation("CierreCaja")
 }
 
 model Producto {
-  id             Int      @id @default(autoincrement())
-  codigo         String   @unique
-  nombre         String
-  categoria      String
-  precioRegular  Float
-  precioOferta   Float
-  stock          Int
-  esPrime        Boolean  @default(false)
-  imagenUrl      String
-  activo         Boolean  @default(true)
-  itemsVenta     ItemVenta[]
+  id            Int         @id @default(autoincrement())
+  codigo        String      @unique
+  nombre        String
+  categoria     String
+  precioRegular Float
+  precioOferta  Float
+  stock         Int
+  esPrime       Boolean     @default(false)
+  imagenUrl     String
+  activo        Boolean     @default(true)
+  itemsVenta    ItemVenta[]
 }
 
 model Categoria {
@@ -42,11 +42,26 @@ model Categoria {
 }
 
 model Cupon {
-  id              Int     @id @default(autoincrement())
-  codigo          String  @unique
-  montoDescuento  Float
-  activo          Boolean @default(true)
-  ventas          Venta[]
+  id             Int     @id @default(autoincrement())
+  codigo         String  @unique
+  montoDescuento Float
+  activo         Boolean @default(true)
+  ventas         Venta[]
+}
+
+// Fila única (id = 1) con los datos del emisor que se imprimen en los comprobantes.
+model Sede {
+  id              Int      @id @default(1)
+  nombreComercial String   @default("TAMBO +")
+  razonSocial     String   @default("TIENDAS TAMBO S.A.C.")
+  ruc             String   @default("20000000000")
+  direccion       String   @default("AV. EJEMPLO NRO. 000")
+  distrito        String   @default("LIMA - LA MOLINA - LIMA")
+  numeroTienda    String   @default("001")
+  leyendaPie      String   @default("Documento de demostración, sin validez tributaria.")
+  latitud         Float?
+  longitud        Float?
+  actualizadoEn   DateTime @updatedAt
 }
 
 model CorrelativoComprobante {
@@ -58,49 +73,52 @@ model CajaSesion {
   id                   Int       @id @default(autoincrement())
   montoApertura        Float
   fechaApertura        DateTime  @default(now())
-  usuarioAperturaId    Int
-  usuarioApertura      Usuario   @relation("AperturaCaja", fields: [usuarioAperturaId], references: [id])
+  usuarioAperturaId    Int?
+  usuarioApertura      Usuario?  @relation("AperturaCaja", fields: [usuarioAperturaId], references: [id], onDelete: SetNull)
+  nombreApertura       String    @default("")
   fechaCierre          DateTime?
   montoCierreDeclarado Float?
   usuarioCierreId      Int?
-  usuarioCierre        Usuario?  @relation("CierreCaja", fields: [usuarioCierreId], references: [id])
+  usuarioCierre        Usuario?  @relation("CierreCaja", fields: [usuarioCierreId], references: [id], onDelete: SetNull)
+  nombreCierre         String?
   estado               String    @default("ABIERTA")
   ventas               Venta[]
 }
 
 model Venta {
-  id                      Int             @id @default(autoincrement())
-  numeroComprobante       String          @unique
-  tipoComprobante         String
-  metodoPago              String          @default("EFECTIVO")
-  clienteTipoDocumento    String?
-  clienteNumeroDocumento  String?
-  clienteRuc              String?
-  clienteRazonSocial      String?
-  cuponId                 Int?
-  cuponMontoDescuento     Float           @default(0)
-  totalProductos          Float
-  descuentoAplicado       Float
-  igvDesglosado           Float
-  totalPagar              Float
-  fecha                   DateTime        @default(now())
-  usuarioId               Int
-  usuario                 Usuario         @relation(fields: [usuarioId], references: [id])
-  cupon                   Cupon?          @relation(fields: [cuponId], references: [id])
-  cajaSesionId            Int?
-  cajaSesion              CajaSesion?     @relation(fields: [cajaSesionId], references: [id])
-  items                   ItemVenta[]
+  id                     Int         @id @default(autoincrement())
+  numeroComprobante      String      @unique
+  tipoComprobante        String
+  metodoPago             String      @default("EFECTIVO")
+  clienteTipoDocumento   String?
+  clienteNumeroDocumento String?
+  clienteRuc             String?
+  clienteRazonSocial     String?
+  cuponId                Int?
+  cuponMontoDescuento    Float       @default(0)
+  totalProductos         Float
+  descuentoAplicado      Float
+  igvDesglosado          Float
+  totalPagar             Float
+  fecha                  DateTime    @default(now())
+  usuarioId              Int?
+  usuario                Usuario?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  cajeroNombre           String      @default("")
+  cupon                  Cupon?      @relation(fields: [cuponId], references: [id])
+  cajaSesionId           Int?
+  cajaSesion             CajaSesion? @relation(fields: [cajaSesionId], references: [id])
+  items                  ItemVenta[]
 }
 
 model ItemVenta {
-  id              Int      @id @default(autoincrement())
-  ventaId         Int
-  venta           Venta    @relation(fields: [ventaId], references: [id])
-  productoId      Int
-  producto        Producto @relation(fields: [productoId], references: [id])
-  nombreProducto  String
-  categoria       String
-  cantidad        Int
-  precioUnitario  Float
-  subtotal        Float
+  id             Int      @id @default(autoincrement())
+  ventaId        Int
+  venta          Venta    @relation(fields: [ventaId], references: [id])
+  productoId     Int
+  producto       Producto @relation(fields: [productoId], references: [id])
+  nombreProducto String
+  categoria      String
+  cantidad       Int
+  precioUnitario Float
+  subtotal       Float
 }

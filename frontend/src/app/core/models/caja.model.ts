@@ -9,8 +9,10 @@ export interface CajaSesion {
   estado: EstadoCaja;
   fechaCierre: string | null;
   montoCierreDeclarado: number | null;
-  usuarioApertura: { id: number; nombre: string };
+  usuarioApertura: { id: number; nombre: string } | null;
   usuarioCierre: { id: number; nombre: string } | null;
+  nombreApertura: string;
+  nombreCierre: string | null;
 }
 
 export interface ResumenCaja {

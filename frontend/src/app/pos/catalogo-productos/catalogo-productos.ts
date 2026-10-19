@@ -18,12 +18,24 @@ export class CatalogoProductos implements OnInit {
   productos = signal<Producto[]>([]);
   cargando = signal(true);
   categoriaSeleccionada = signal<string>('TODAS');
+  busqueda = signal<string>('');
 
   productosFiltrados = computed(() => {
     const categoria = this.categoriaSeleccionada();
-    const lista = this.productos();
-    return categoria === 'TODAS' ? lista : lista.filter((p) => p.categoria === categoria);
+    const texto = this.busqueda().trim().toLowerCase();
+    let lista = this.productos();
+    if (categoria !== 'TODAS') lista = lista.filter((p) => p.categoria === categoria);
+    if (texto) {
+      lista = lista.filter(
+        (p) => p.nombre.toLowerCase().includes(texto) || p.codigo.toLowerCase().includes(texto),
+      );
+    }
+    return lista;
   });
+
+  onBusquedaInput(valor: string): void {
+    this.busqueda.set(valor);
+  }
 
   ngOnInit(): void {
     this.cargar();

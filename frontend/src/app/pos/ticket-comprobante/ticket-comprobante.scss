@@ -1,0 +1,155 @@
+.ticket-tambo {
+  max-width: 400px;
+  padding: 1.25rem 1.1rem 1.5rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #000;
+  box-shadow: 0 4px 14px -8px rgba(0, 0, 0, 0.35);
+}
+
+.tk-empresa {
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.tk-marca {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.tk-titulo {
+  text-align: center;
+  margin: 1rem 0 0.9rem;
+}
+
+.tk-titulo-texto {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.tk-numero {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.tk-datos {
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.tk-fila-doble {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.tk-etq {
+  display: inline-block;
+  min-width: 5.2rem;
+}
+
+.tk-fila-doble .tk-etq {
+  min-width: 0;
+}
+
+.tk-sep {
+  border-top: 2px dashed #000;
+  margin: 0.6rem 0;
+}
+
+.tk-items-cab,
+.tk-item-fila {
+  display: grid;
+  grid-template-columns: 1.15fr 0.7fr 1fr 0.95fr 1.15fr 0.9fr;
+  gap: 0.25rem;
+  align-items: end;
+}
+
+.tk-items-cab {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: right;
+  line-height: 1.15;
+}
+
+.tk-items-cab span:first-child {
+  text-align: left;
+}
+
+.tk-desc-cab {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 0.15rem;
+}
+
+.tk-item {
+  margin-bottom: 0.45rem;
+}
+
+.tk-item-fila {
+  font-size: 0.78rem;
+}
+
+.tk-item-desc {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.tk-num {
+  text-align: right;
+}
+
+.tk-totales {
+  margin-left: auto;
+  width: 78%;
+  font-size: 0.82rem;
+}
+
+.tk-tot-fila {
+  display: grid;
+  grid-template-columns: 1fr 1.6rem 4.2rem;
+  align-items: baseline;
+
+  small {
+    font-size: 0.72rem;
+    margin-left: 0.4rem;
+  }
+}
+
+.tk-sol {
+  text-align: center;
+}
+
+.tk-monto {
+  text-align: right;
+}
+
+.tk-importe {
+  font-weight: 800;
+  font-size: 0.92rem;
+  margin-top: 0.15rem;
+}
+
+.tk-forma-pago {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.tk-son {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.tk-pie {
+  text-align: center;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}

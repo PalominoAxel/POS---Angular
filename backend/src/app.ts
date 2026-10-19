@@ -8,6 +8,8 @@ import { usuariosRouter } from "./routes/usuarios.routes";
 import { cuponesRouter } from "./routes/cupones.routes";
 import { cajaRouter } from "./routes/caja.routes";
 import { categoriasRouter } from "./routes/categorias.routes";
+import { rucRouter } from "./routes/ruc.routes";
+import { sedeRouter } from "./routes/sede.routes";
 import { DIRECTORIO_UPLOADS } from "./middleware/upload.middleware";
 
 export function crearApp(): Application {
@@ -30,6 +32,8 @@ export function crearApp(): Application {
   app.use("/api/cupones", cuponesRouter);
   app.use("/api/caja", cajaRouter);
   app.use("/api/categorias", categoriasRouter);
+  app.use("/api/ruc", rucRouter);
+  app.use("/api/sede", sedeRouter);
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error(err);

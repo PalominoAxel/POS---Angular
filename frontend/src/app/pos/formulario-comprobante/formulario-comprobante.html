@@ -40,12 +40,20 @@
         (input)="onRucInput($any($event.target).value)"
         (keydown)="bloquearNoNumerico($event)"
       />
-      <label class="form-label small">Razón Social</label>
+      <label class="form-label small">
+        Razón Social
+        @if (consultandoRuc()) {
+          <i class="bi bi-arrow-repeat girando ms-1"></i>
+        }
+      </label>
       <input
         class="form-control form-control-sm"
         [class.is-invalid]="controls.razonSocial.invalid && controls.razonSocial.touched"
         formControlName="razonSocial"
       />
+      @if (errorRuc()) {
+        <div class="form-text text-warning">{{ errorRuc() }}</div>
+      }
     </div>
   }
 

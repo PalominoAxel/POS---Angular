@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ClienteBoleta, ClienteFactura, TipoComprobante } from '../../core/models/venta.model';
+import { RucService } from '../../core/services/ruc.service';
 
 export type TipoDocumento = 'SIN_DOC' | 'DNI' | 'CE';
 
@@ -19,6 +20,8 @@ const PATRON_RUC = /^(10|15|16|17|20)\d{9}$/;
 })
 export class FormularioComprobante {
   private readonly fb = inject(FormBuilder);
+  private readonly rucService = inject(RucService);
+  private ultimoRucConsultado = '';
 
   readonly form = this.fb.nonNullable.group({
     tipoComprobante: this.fb.nonNullable.control<TipoComprobante>('BOLETA'),
@@ -31,6 +34,8 @@ export class FormularioComprobante {
   readonly controls = this.form.controls;
 
   error = signal<string | null>(null);
+  consultandoRuc = signal(false);
+  errorRuc = signal<string | null>(null);
 
   maxLengthDocumento(): number {
     const tipo = this.controls.tipoDocumento.value;
@@ -65,7 +70,31 @@ export class FormularioComprobante {
   }
 
   onRucInput(valor: string): void {
-    this.controls.ruc.setValue(valor.replace(/\D/g, '').slice(0, 11));
+    const limpio = valor.replace(/\D/g, '').slice(0, 11);
+    this.controls.ruc.setValue(limpio);
+    this.errorRuc.set(null);
+
+    if (limpio.length === 11 && limpio !== this.ultimoRucConsultado) {
+      this.consultarRuc(limpio);
+    }
+  }
+
+  private consultarRuc(ruc: string): void {
+    this.ultimoRucConsultado = ruc;
+    this.consultandoRuc.set(true);
+    this.rucService.consultar(ruc).subscribe({
+      next: (datos) => {
+        this.controls.razonSocial.setValue(datos.razonSocial);
+        if (datos.estado && datos.estado.toUpperCase() !== 'ACTIVO') {
+          this.errorRuc.set(`Atención: el RUC figura como "${datos.estado}" en SUNAT.`);
+        }
+        this.consultandoRuc.set(false);
+      },
+      error: (err) => {
+        this.errorRuc.set(err.error?.mensaje ?? 'No se pudo autocompletar. Ingresa la razón social manualmente.');
+        this.consultandoRuc.set(false);
+      },
+    });
   }
 
   private actualizarValidadores(): void {
@@ -80,7 +109,7 @@ export class FormularioComprobante {
     const esFactura = this.controls.tipoComprobante.value === 'FACTURA';
     if (esFactura) {
       this.controls.ruc.setValidators([Validators.required, Validators.pattern(PATRON_RUC)]);
-      this.controls.razonSocial.setValidators([Validators.required]);
+      this.controls.razonSocial.setValidators([Validators.required, Validators.pattern(/^(?!\d+$).+$/)]);
     } else {
       this.controls.ruc.clearValidators();
       this.controls.razonSocial.clearValidators();
@@ -103,7 +132,11 @@ export class FormularioComprobante {
         return null;
       }
       if (this.controls.razonSocial.invalid) {
-        this.error.set('Ingrese la Razón Social del cliente.');
+        this.error.set(
+          valores.razonSocial.trim()
+            ? 'La Razón Social no puede ser solo números.'
+            : 'Ingrese la Razón Social del cliente.',
+        );
         return null;
       }
       const cliente: ClienteFactura = { ruc: valores.ruc, razonSocial: valores.razonSocial.trim() };
@@ -140,6 +173,8 @@ export class FormularioComprobante {
       razonSocial: '',
     });
     this.error.set(null);
+    this.errorRuc.set(null);
+    this.ultimoRucConsultado = '';
     this.actualizarValidadores();
   }
 }

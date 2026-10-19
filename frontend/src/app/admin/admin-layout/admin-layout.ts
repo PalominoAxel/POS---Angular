@@ -20,6 +20,7 @@ export class AdminLayout {
     { path: 'caja', icon: 'bi-cash-coin', label: 'Caja' },
     { path: 'cupones', icon: 'bi-ticket-perforated-fill', label: 'Cupones' },
     { path: 'usuarios', icon: 'bi-people-fill', label: 'Usuarios' },
+    { path: 'sede', icon: 'bi-geo-alt-fill', label: 'Sede' },
   ];
 
   readonly usuario = this.auth.usuarioActual;

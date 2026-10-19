@@ -1,0 +1,90 @@
+<div>
+  <h3 class="mb-3">Sede</h3>
+  <p class="text-muted small">
+    Estos datos se imprimen en el encabezado y pie de cada boleta/factura. Haz clic en el mapa (o arrastra el
+    marcador) para fijar la ubicación exacta de la tienda.
+  </p>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div id="mapa-sede" style="height: 420px; border-radius: 0.5rem; overflow: hidden"></div>
+      @if (buscandoDireccion()) {
+        <div class="form-text"><i class="bi bi-arrow-repeat girando"></i> Buscando dirección de este punto...</div>
+      }
+    </div>
+
+    <div class="col-lg-6">
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="card p-3">
+        @if (cargando()) {
+          <p class="text-muted mb-0">Cargando...</p>
+        } @else {
+          <div class="mb-2">
+            <label class="form-label small">Nombre comercial</label>
+            <input class="form-control" formControlName="nombreComercial" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Razón Social</label>
+            <input
+              class="form-control"
+              [class.is-invalid]="controls.razonSocial.invalid && controls.razonSocial.touched"
+              formControlName="razonSocial"
+            />
+            @if (controls.razonSocial.invalid && controls.razonSocial.touched) {
+              <div class="invalid-feedback">La razón social no puede estar vacía ni ser solo números.</div>
+            }
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">RUC</label>
+            <input
+              class="form-control"
+              inputmode="numeric"
+              maxlength="11"
+              [class.is-invalid]="controls.ruc.invalid && controls.ruc.touched"
+              formControlName="ruc"
+            />
+            @if (controls.ruc.invalid && controls.ruc.touched) {
+              <div class="invalid-feedback">El RUC debe tener 11 dígitos.</div>
+            }
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Dirección</label>
+            <input class="form-control" formControlName="direccion" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Distrito</label>
+            <input class="form-control" formControlName="distrito" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">N° de tienda</label>
+            <input class="form-control" formControlName="numeroTienda" />
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Leyenda del pie (opcional)</label>
+            <input class="form-control" formControlName="leyendaPie" />
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col">
+              <label class="form-label small text-muted">Latitud</label>
+              <input class="form-control" formControlName="latitud" readonly />
+            </div>
+            <div class="col">
+              <label class="form-label small text-muted">Longitud</label>
+              <input class="form-control" formControlName="longitud" readonly />
+            </div>
+          </div>
+
+          @if (error()) {
+            <div class="alert alert-danger py-2">{{ error() }}</div>
+          }
+          @if (guardadoOk()) {
+            <div class="alert alert-success py-2">Sede actualizada correctamente.</div>
+          }
+
+          <button type="submit" class="btn btn-danger" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar sede' }}
+          </button>
+        }
+      </form>
+    </div>
+  </div>
+</div>

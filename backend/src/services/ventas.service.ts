@@ -14,6 +14,14 @@ import { obtenerCajaAbierta } from "./caja.service";
 const IGV_RATE = 0.18;
 const DESCUENTO_COMBO_BEBIDA = 1.0;
 
+// Cada ítem incluye el código y precio regular del producto para poder imprimir el comprobante
+// (columnas CÓDIGO, PRECIO UNIT. y DSCTO UNIT).
+const INCLUDE_VENTA = {
+  items: { include: { producto: { select: { codigo: true, precioRegular: true } } } },
+  cupon: true,
+  usuario: { select: { id: true, nombre: true, nombreUsuario: true, rol: true } },
+} satisfies Prisma.VentaInclude;
+
 export class VentaError extends Error {
   constructor(message: string, public status = 400) {
     super(message);
@@ -109,6 +117,9 @@ function validarCliente(input: VentaInput) {
     if (!input.cliente.razonSocial?.trim()) {
       throw new VentaError("Ingrese la Razón Social del cliente");
     }
+    if (/^\d+$/.test(input.cliente.razonSocial.trim())) {
+      throw new VentaError("La Razón Social no puede ser solo números");
+    }
     return;
   }
 
@@ -138,6 +149,7 @@ export async function registrarVenta(input: VentaInput, usuarioId: number) {
   validarCliente(input);
   const productos = await cargarProductosCarrito(input.items);
   const totales = await calcularTotales(input.items, productos, input.cuponCodigo);
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId }, select: { nombre: true } });
 
   return prisma.$transaction(async (tx) => {
     const numeroComprobante = await siguienteCorrelativo(tx, input.tipoComprobante);
@@ -149,6 +161,7 @@ export async function registrarVenta(input: VentaInput, usuarioId: number) {
         metodoPago: input.metodoPago,
         cajaSesionId: cajaAbierta.id,
         usuarioId,
+        cajeroNombre: usuario?.nombre ?? "",
         clienteTipoDocumento: esFactura(input.cliente) ? null : input.cliente.tipoDocumento ?? null,
         clienteNumeroDocumento: esFactura(input.cliente) ? null : input.cliente.numeroDocumento ?? null,
         clienteRuc: esFactura(input.cliente) ? input.cliente.ruc : null,
@@ -173,7 +186,7 @@ export async function registrarVenta(input: VentaInput, usuarioId: number) {
           }),
         },
       },
-      include: { items: true, cupon: true, usuario: { select: { id: true, nombre: true, nombreUsuario: true, rol: true } } },
+      include: INCLUDE_VENTA,
     });
 
     for (const item of input.items) {
@@ -195,7 +208,7 @@ export function listarVentas(fechaInicio?: Date, fechaFin?: Date) {
 
   return prisma.venta.findMany({
     where: fecha ? { fecha } : undefined,
-    include: { items: true, cupon: true, usuario: { select: { id: true, nombre: true, nombreUsuario: true, rol: true } } },
+    include: INCLUDE_VENTA,
     orderBy: { fecha: "desc" },
   });
 }
@@ -203,6 +216,6 @@ export function listarVentas(fechaInicio?: Date, fechaFin?: Date) {
 export function obtenerVenta(id: number) {
   return prisma.venta.findUnique({
     where: { id },
-    include: { items: true, cupon: true, usuario: { select: { id: true, nombre: true, nombreUsuario: true, rol: true } } },
+    include: INCLUDE_VENTA,
   });
 }

@@ -33,6 +33,7 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/categorias/categorias').then((m) => m.Categorias),
       },
       { path: 'usuarios', loadComponent: () => import('./admin/usuarios/usuarios').then((m) => m.Usuarios) },
+      { path: 'sede', loadComponent: () => import('./admin/sede/sede').then((m) => m.Sede) },
     ],
   },
   { path: '**', redirectTo: 'pos' },

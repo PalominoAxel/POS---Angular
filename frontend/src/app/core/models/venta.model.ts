@@ -39,6 +39,7 @@ export interface ItemVenta {
   cantidad: number;
   precioUnitario: number;
   subtotal: number;
+  producto?: { codigo: string; precioRegular: number };
 }
 
 export interface Venta {
@@ -56,8 +57,10 @@ export interface Venta {
   igvDesglosado: number;
   totalPagar: number;
   fecha: string;
+  cajaSesionId: number | null;
   items: ItemVenta[];
-  usuario: { id: number; nombre: string };
+  usuario: { id: number; nombre: string } | null;
+  cajeroNombre: string;
   cupon: { codigo: string } | null;
 }
 

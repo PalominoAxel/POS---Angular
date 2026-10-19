@@ -35,7 +35,7 @@
             <td>{{ venta.numeroComprobante }}</td>
             <td>{{ venta.tipoComprobante }}</td>
             <td>{{ venta.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
-            <td>{{ venta.usuario.nombre }}</td>
+            <td>{{ venta.cajeroNombre }}</td>
             <td>{{ venta.totalPagar | precioSoles }}</td>
             <td>
               <button class="btn btn-sm btn-outline-primary" (click)="ver(venta)">Ver</button>
