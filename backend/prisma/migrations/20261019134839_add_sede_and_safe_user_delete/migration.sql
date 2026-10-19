@@ -10,7 +10,7 @@ ADD COLUMN     "nombreCierre" TEXT,
 ALTER COLUMN "usuarioAperturaId" DROP NOT NULL;
 
 -- AlterTable
-ALTER TABLE "Venta" DROP COLUMN "propina",
+ALTER TABLE "Venta" DROP COLUMN IF EXISTS "propina",
 ADD COLUMN     "cajeroNombre" TEXT NOT NULL DEFAULT '',
 ALTER COLUMN "usuarioId" DROP NOT NULL;
 
